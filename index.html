@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Daily Diary</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>My Daily Diary</h1>
+        <button id="auth-button">Login with Google</button>
+    </header>
+
+    <main id="app-container" class="hidden">
+        <div class="controls">
+            <label for="diary-date">Select a date:</label>
+            <input type="date" id="diary-date">
+        </div>
+        <textarea id="diary-entry" placeholder="Write your thoughts for the day..."></textarea>
+        <button id="save-button">Save Entry</button>
+        <p id="status-message"></p>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+
+    <!-- Our App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
