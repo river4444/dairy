@@ -1,12 +1,5 @@
-// --- 1. IMPORT THE NECESSARY FUNCTIONS FROM FIREBASE ---
+// --- 1. IMPORT ONLY FIRESTORE FUNCTIONS ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { 
-    getAuth, 
-    GoogleAuthProvider, 
-    onAuthStateChanged, 
-    signInWithPopup, 
-    signOut 
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { 
     getFirestore, 
     doc, 
@@ -15,7 +8,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 
-// --- 2. YOUR FIREBASE CONFIGURATION ---
+// --- 2. YOUR FIREBASE CONFIGURATION (Stays the same) ---
 const firebaseConfig = {
     apiKey: "AIzaSyAquYjH9mhBtLvPbFfC_K1xizXNruORXng",
     authDomain: "dairy-2139f.firebaseapp.com",
@@ -26,63 +19,40 @@ const firebaseConfig = {
 };
 
 
-// --- 3. INITIALIZE FIREBASE AND GET REFERENCES TO SERVICES ---
+// --- 3. INITIALIZE FIREBASE AND GET REFERENCE TO FIRESTORE ---
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
 
 
-// --- 4. GET DOM ELEMENTS ---
-const authButton = document.getElementById('auth-button');
+// --- 4. GET DOM ELEMENTS (No more auth button) ---
 const appContainer = document.getElementById('app-container');
 const dateInput = document.getElementById('diary-date');
 const entryTextarea = document.getElementById('diary-entry');
 const saveButton = document.getElementById('save-button');
 const statusMessage = document.getElementById('status-message');
 
-let currentUser = null;
 
-
-// --- 5. AUTHENTICATION LOGIC ---
-onAuthStateChanged(auth, user => {
-    if (user) {
-        currentUser = user;
-        authButton.textContent = 'Logout';
-        appContainer.classList.remove('hidden');
-        loadEntryForDate(dateInput.value);
-    } else {
-        currentUser = null;
-        authButton.textContent = 'Login with Google';
-        appContainer.classList.add('hidden');
-    }
-});
-
-authButton.addEventListener('click', () => {
-    if (currentUser) {
-        signOut(auth);
-    } else {
-        signInWithPopup(auth, provider).catch(error => {
-            console.error("Authentication Error:", error);
-        });
-    }
-});
+// --- 5. NO MORE AUTHENTICATION LOGIC! ---
 
 
 // --- 6. FIRESTORE (DATABASE) LOGIC ---
+
+// We will use a fixed path instead of a user-specific one.
+const diaryCollectionId = 'public-diary';
+
 const getTodaysDate = () => {
     const today = new Date();
     const offset = today.getTimezoneOffset();
-// CORRECT:
-const todayWithOffset = new Date(today.getTime() - (offset * 60 * 1000));    return todayWithOffset.toISOString().split('T')[0];
+    const todayWithOffset = new Date(today.getTime() - (offset * 60 * 1000));
+    return todayWithOffset.toISOString().split('T')[0];
 }
 
 dateInput.value = getTodaysDate();
 
 const loadEntryForDate = async (dateStr) => {
-    if (!currentUser || !dateStr) return;
+    if (!dateStr) return;
     entryTextarea.value = 'Loading...';
-    const entryRef = doc(db, 'diaries', currentUser.uid, 'entries', dateStr);
+    const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
     
     try {
         const docSnap = await getDoc(entryRef);
@@ -95,18 +65,14 @@ const loadEntryForDate = async (dateStr) => {
     } catch (error) {
         console.error("Error loading entry:", error);
         entryTextarea.value = 'Error loading entry.';
-        statusMessage.textContent = 'Error loading entry.';
     }
 };
 
 const saveEntry = async () => {
     const dateStr = dateInput.value;
     const content = entryTextarea.value;
-    if (!currentUser || !dateStr) {
-        statusMessage.textContent = 'You must be logged in to save.';
-        return;
-    }
-    const entryRef = doc(db, 'diaries', currentUser.uid, 'entries', dateStr);
+    const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
+    
     try {
         await setDoc(entryRef, { content: content });
         statusMessage.textContent = 'Saved successfully!';
@@ -124,3 +90,6 @@ dateInput.addEventListener('change', () => {
 });
 
 saveButton.addEventListener('click', saveEntry);
+
+// --- 8. LOAD THE FIRST ENTRY WHEN THE PAGE LOADS ---
+loadEntryForDate(dateInput.value);
