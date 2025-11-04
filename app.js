@@ -11,11 +11,16 @@ const firebaseConfig = {
     appId: "1:50167451169:web:5ea9cffde6db860ff7dd60"
 };
 
+// --- UPDATED HABITS LIST ---
 const HABITS = [
     { id: 'sunlight', text: 'Got morning sunlight' },
     { id: 'exercise', text: 'Exercised for 20+ minutes' },
-    { id: 'noPhone', text: 'No phone 1 hour before bed' },
-    { id: 'read', text: 'Read for 15 minutes' }
+    { id: 'noPhoneMorning', text: 'No Phone for the First Hour' },
+    { id: 'mindfulness', text: '5+ Minutes of Mindfulness' },
+    { id: 'gratitude', text: 'Wrote 3 Gratitude Items' },
+    { id: 'priorities', text: 'Set Top 1-3 Priorities' },
+    { id: 'tidyUp', text: '10-Minute Evening Tidy-Up' },
+    { id: 'noPhoneBed', text: 'No phone 1 hour before bed' }
 ];
 const diaryCollectionId = 'public-diary';
 
@@ -24,9 +29,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // --- MAIN APP LOGIC ---
-// THIS FUNCTION WILL ONLY RUN AFTER THE ENTIRE PAGE IS LOADED
 const main = () => {
-    // --- DOM ELEMENTS ARE NOW SAFELY ACCESSED HERE ---
+    // --- DOM ELEMENTS ---
     const dateInput = document.getElementById('diary-date');
     const entryTextarea = document.getElementById('diary-entry');
     const saveButton = document.getElementById('save-button');
@@ -43,6 +47,7 @@ const main = () => {
     };
 
     const renderChecklist = () => {
+        checklistContainer.innerHTML = ''; // Clear old habits before rendering new ones
         HABITS.forEach(habit => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'habit-item';
@@ -52,7 +57,6 @@ const main = () => {
     };
 
     const loadEntryForDate = async (dateStr) => {
-        // Function content is the same as before...
         if (!dateStr) return;
         entryTextarea.value = 'Loading...';
         const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
@@ -63,12 +67,16 @@ const main = () => {
                 entryTextarea.value = data.content || '';
                 const habitsData = data.habits || {};
                 HABITS.forEach(habit => {
-                    document.getElementById(`habit-${habit.id}`).checked = habitsData[habit.id] || false;
+                    const checkbox = document.getElementById(`habit-${habit.id}`);
+                    if (checkbox) {
+                        checkbox.checked = habitsData[habit.id] || false;
+                    }
                 });
             } else {
                 entryTextarea.value = '';
                 HABITS.forEach(habit => {
-                    document.getElementById(`habit-${habit.id}`).checked = false;
+                    const checkbox = document.getElementById(`habit-${habit.id}`);
+                    if (checkbox) checkbox.checked = false;
                 });
             }
             statusMessage.textContent = '';
@@ -79,12 +87,14 @@ const main = () => {
     };
 
     const saveEntry = async () => {
-        // Function content is the same as before...
         const dateStr = dateInput.value;
         const content = entryTextarea.value;
         const habitsToSave = {};
         HABITS.forEach(habit => {
-            habitsToSave[habit.id] = document.getElementById(`habit-${habit.id}`).checked;
+            const checkbox = document.getElementById(`habit-${habit.id}`);
+            if (checkbox) {
+                habitsToSave[habit.id] = checkbox.checked;
+            }
         });
         const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
         try {
@@ -99,7 +109,6 @@ const main = () => {
     };
     
     const updateHabitTracker = async () => {
-        // Function content is the same as before...
         trackerStatsContainer.innerHTML = 'Calculating...';
         const habitCounts = {};
         HABITS.forEach(h => habitCounts[h.id] = 0);
@@ -170,5 +179,4 @@ const main = () => {
 };
 
 // --- START THE APP ---
-// This listener waits for the page to be fully ready, then calls our main function.
 document.addEventListener('DOMContentLoaded', main);
