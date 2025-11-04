@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Daily Diary</title>
-    <link rel="stylesheet" href="./style.css">  <!-- Added ./ for good practice -->
+    <title>My Public Diary</title>
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 
     <header>
-        <h1>My Daily Diary</h1>
-        <button id="auth-button">Login with Google</button>
+        <h1>My Public Diary</h1>
     </header>
 
-    <main id="app-container" class="hidden">
+    <!-- The main app is now always visible -->
+    <main id="app-container">
         <div class="controls">
             <label for="diary-date">Select a date:</label>
             <input type="date" id="diary-date">
@@ -23,7 +23,6 @@
         <p id="status-message"></p>
     </main>
 
-    <!-- This is the only script tag you need -->
     <script type="module" src="./app.js"></script>
     
 </body>
