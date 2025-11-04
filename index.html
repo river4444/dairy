@@ -17,15 +17,16 @@
         </div>
     </header>
     <main id="app-container">
-        <div id="habit-tracker-container">
-            <h2>Last 30 Days</h2>
-            <div id="tracker-stats">Loading stats...</div>
-        </div>
+        
         <div class="controls">
             <label for="diary-date">Select a date:</label>
             <input type="date" id="diary-date">
         </div>
+
+        <!-- SECTION 1: DIARY ENTRY (Now at the top) -->
         <textarea id="diary-entry" placeholder="Write your thoughts for the day..."></textarea>
+        
+        <!-- SECTION 2: DAILY HABITS CHECKLIST -->
         <div id="checklist-section">
             <button class="collapsible-header">
                 <h2>Daily Habits</h2>
@@ -35,8 +36,17 @@
                 <div id="checklist-container"></div>
             </div>
         </div>
-        <button id="save-button">Save Entry</button>
+
+        <!-- SECTION 3: SAVE BUTTON -->
+        <button id="save-button">Save Entry & Habits</button>
         <p id="status-message"></p>
+
+        <!-- SECTION 4: HABIT TRACKER (Moved to the bottom) -->
+        <div id="habit-tracker-container">
+            <h2>Last 30 Days</h2>
+            <div id="tracker-stats">Loading stats...</div>
+        </div>
+
     </main>
     <script type="module" src="./app.js"></script>
 </body>
