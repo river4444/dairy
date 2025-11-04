@@ -7,10 +7,8 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-
     <header>
         <h1>My Diary & Tracker</h1>
-        <!-- This is the Dark Mode Toggle Switch -->
         <div class="theme-switch-wrapper">
             <label class="theme-switch" for="theme-toggle">
                 <input type="checkbox" id="theme-toggle" />
@@ -18,38 +16,28 @@
             </label>
         </div>
     </header>
-
     <main id="app-container">
-        <!-- This is the Habit Tracker Statistics Section -->
         <div id="habit-tracker-container">
             <h2>Last 30 Days</h2>
             <div id="tracker-stats">Loading stats...</div>
         </div>
-
         <div class="controls">
             <label for="diary-date">Select a date:</label>
             <input type="date" id="diary-date">
         </div>
         <textarea id="diary-entry" placeholder="Write your thoughts for the day..."></textarea>
-        
-        <!-- This is the Collapsible Checklist Section -->
         <div id="checklist-section">
             <button class="collapsible-header">
                 <h2>Daily Habits</h2>
                 <span class="arrow">▼</span>
             </button>
             <div class="collapsible-content">
-                <div id="checklist-container">
-                    <!-- Checklist items will be added here by JavaScript -->
-                </div>
+                <div id="checklist-container"></div>
             </div>
         </div>
-
         <button id="save-button">Save Entry</button>
         <p id="status-message"></p>
     </main>
-
     <script type="module" src="./app.js"></script>
-    
 </body>
 </html>
