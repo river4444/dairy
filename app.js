@@ -23,170 +23,152 @@ const diaryCollectionId = 'public-diary';
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- DOM ELEMENTS ---
-const dateInput = document.getElementById('diary-date');
-const entryTextarea = document.getElementById('diary-entry');
-const saveButton = document.getElementById('save-button');
-const statusMessage = document.getElementById('status-message');
-const checklistContainer = document.getElementById('checklist-container');
-const themeToggle = document.getElementById('theme-toggle');
-const trackerStatsContainer = document.getElementById('tracker-stats');
+// --- MAIN APP LOGIC ---
+// THIS FUNCTION WILL ONLY RUN AFTER THE ENTIRE PAGE IS LOADED
+const main = () => {
+    // --- DOM ELEMENTS ARE NOW SAFELY ACCESSED HERE ---
+    const dateInput = document.getElementById('diary-date');
+    const entryTextarea = document.getElementById('diary-entry');
+    const saveButton = document.getElementById('save-button');
+    const statusMessage = document.getElementById('status-message');
+    const checklistContainer = document.getElementById('checklist-container');
+    const themeToggle = document.getElementById('theme-toggle');
+    const trackerStatsContainer = document.getElementById('tracker-stats');
 
-// --- FUNCTIONS ---
+    // --- FUNCTIONS ---
+    const getTodaysDate = () => {
+        const today = new Date();
+        const offset = today.getTimezoneOffset();
+        return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+    };
 
-const getTodaysDate = () => {
-    const today = new Date();
-    const offset = today.getTimezoneOffset();
-    return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
-};
+    const renderChecklist = () => {
+        HABITS.forEach(habit => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'habit-item';
+            itemDiv.innerHTML = `<label><input type="checkbox" id="habit-${habit.id}"><span>${habit.text}</span></label>`;
+            checklistContainer.appendChild(itemDiv);
+        });
+    };
 
-const renderChecklist = () => {
-    HABITS.forEach(habit => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'habit-item';
-        itemDiv.innerHTML = `
-            <label>
-                <input type="checkbox" id="habit-${habit.id}">
-                <span>${habit.text}</span>
-            </label>
-        `;
-        checklistContainer.appendChild(itemDiv);
-    });
-};
-
-const loadEntryForDate = async (dateStr) => {
-    if (!dateStr) return;
-    entryTextarea.value = 'Loading...';
-    const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
-    try {
-        const docSnap = await getDoc(entryRef);
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            entryTextarea.value = data.content || '';
-            const habitsData = data.habits || {};
-            HABITS.forEach(habit => {
-                document.getElementById(`habit-${habit.id}`).checked = habitsData[habit.id] || false;
-            });
-        } else {
-            entryTextarea.value = '';
-            HABITS.forEach(habit => {
-                document.getElementById(`habit-${habit.id}`).checked = false;
-            });
-        }
-        statusMessage.textContent = '';
-    } catch (error) {
-        console.error("Error loading entry:", error);
-        entryTextarea.value = 'Error loading entry.';
-    }
-};
-
-const saveEntry = async () => {
-    const dateStr = dateInput.value;
-    const content = entryTextarea.value;
-    const habitsToSave = {};
-    HABITS.forEach(habit => {
-        habitsToSave[habit.id] = document.getElementById(`habit-${habit.id}`).checked;
-    });
-
-    const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
-    try {
-        await setDoc(entryRef, { content, habits: habitsToSave });
-        statusMessage.textContent = 'Saved successfully!';
-        setTimeout(() => statusMessage.textContent = '', 3000);
-        updateHabitTracker();
-    } catch (error) {
-        console.error("Error saving entry: ", error);
-        statusMessage.textContent = 'Error saving entry.';
-    }
-};
-
-const updateHabitTracker = async () => {
-    trackerStatsContainer.innerHTML = 'Calculating...';
-    const habitCounts = {};
-    HABITS.forEach(h => habitCounts[h.id] = 0);
-
-    const promises = [];
-    for (let i = 0; i < 30; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
+    const loadEntryForDate = async (dateStr) => {
+        // Function content is the same as before...
+        if (!dateStr) return;
+        entryTextarea.value = 'Loading...';
         const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
-        promises.push(getDoc(entryRef));
-    }
-
-    const snapshots = await Promise.all(promises);
-    snapshots.forEach(docSnap => {
-        if (docSnap.exists()) {
-            const habitsData = docSnap.data().habits || {};
-            HABITS.forEach(habit => {
-                if (habitsData[habit.id]) {
-                    habitCounts[habit.id]++;
-                }
-            });
+        try {
+            const docSnap = await getDoc(entryRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                entryTextarea.value = data.content || '';
+                const habitsData = data.habits || {};
+                HABITS.forEach(habit => {
+                    document.getElementById(`habit-${habit.id}`).checked = habitsData[habit.id] || false;
+                });
+            } else {
+                entryTextarea.value = '';
+                HABITS.forEach(habit => {
+                    document.getElementById(`habit-${habit.id}`).checked = false;
+                });
+            }
+            statusMessage.textContent = '';
+        } catch (error) {
+            console.error("Error loading entry:", error);
+            entryTextarea.value = 'Error loading entry.';
         }
-    });
+    };
 
-    trackerStatsContainer.innerHTML = '';
-    HABITS.forEach(habit => {
-        const count = habitCounts[habit.id];
-        const percentage = Math.round((count / 30) * 100);
-        const itemHTML = `
-            <div class="tracker-item">
-                <div class="tracker-label">
-                    <span>${habit.text}</span>
-                    <span>${count}/30 days</span>
-                </div>
-                <div class="tracker-bar-container">
-                    <div class="tracker-bar" style="width: ${percentage}%;">${percentage}%</div>
-                </div>
-            </div>
-        `;
-        trackerStatsContainer.innerHTML += itemHTML;
-    });
-};
+    const saveEntry = async () => {
+        // Function content is the same as before...
+        const dateStr = dateInput.value;
+        const content = entryTextarea.value;
+        const habitsToSave = {};
+        HABITS.forEach(habit => {
+            habitsToSave[habit.id] = document.getElementById(`habit-${habit.id}`).checked;
+        });
+        const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
+        try {
+            await setDoc(entryRef, { content, habits: habitsToSave });
+            statusMessage.textContent = 'Saved successfully!';
+            setTimeout(() => statusMessage.textContent = '', 3000);
+            updateHabitTracker();
+        } catch (error) {
+            console.error("Error saving entry: ", error);
+            statusMessage.textContent = 'Error saving entry.';
+        }
+    };
+    
+    const updateHabitTracker = async () => {
+        // Function content is the same as before...
+        trackerStatsContainer.innerHTML = 'Calculating...';
+        const habitCounts = {};
+        HABITS.forEach(h => habitCounts[h.id] = 0);
+        const promises = [];
+        for (let i = 0; i < 30; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
+            promises.push(getDoc(entryRef));
+        }
+        const snapshots = await Promise.all(promises);
+        snapshots.forEach(docSnap => {
+            if (docSnap.exists()) {
+                const habitsData = docSnap.data().habits || {};
+                HABITS.forEach(habit => {
+                    if (habitsData[habit.id]) habitCounts[habit.id]++;
+                });
+            }
+        });
+        trackerStatsContainer.innerHTML = '';
+        HABITS.forEach(habit => {
+            const count = habitCounts[habit.id];
+            const percentage = Math.round((count / 30) * 100);
+            trackerStatsContainer.innerHTML += `<div class="tracker-item"><div class="tracker-label"><span>${habit.text}</span><span>${count}/30 days</span></div><div class="tracker-bar-container"><div class="tracker-bar" style="width: ${percentage}%;">${percentage}%</div></div></div>`;
+        });
+    };
 
-const setupThemeToggle = () => {
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        themeToggle.checked = true;
-    }
-    themeToggle.addEventListener('change', () => {
-        if (themeToggle.checked) {
+    const setupThemeToggle = () => {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.setAttribute('data-theme', 'light');
-            localStorage.setItem('theme', 'light');
+            themeToggle.checked = true;
         }
-    });
-};
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    };
 
-const setupCollapsible = () => {
-    const header = document.querySelector('.collapsible-header');
-    const content = document.querySelector('.collapsible-content');
-    header.addEventListener('click', () => {
-        header.classList.toggle('active');
-        if (content.style.maxHeight) {
-            content.style.maxHeight = null;
-        } else {
-            content.style.maxHeight = content.scrollHeight + 'px';
-        }
-    });
-};
-
-// --- INITIAL PAGE LOAD ---
-const initializeApp = () => {
+    const setupCollapsible = () => {
+        const header = document.querySelector('.collapsible-header');
+        const content = document.querySelector('.collapsible-content');
+        header.addEventListener('click', () => {
+            header.classList.toggle('active');
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+            }
+        });
+    };
+    
+    // --- INITIALIZE THE APP ---
     dateInput.value = getTodaysDate();
     renderChecklist();
     setupThemeToggle();
     setupCollapsible();
     loadEntryForDate(dateInput.value);
     updateHabitTracker();
-
     dateInput.addEventListener('change', () => loadEntryForDate(dateInput.value));
     saveButton.addEventListener('click', saveEntry);
 };
 
-// THIS IS THE FIX: Wait for the HTML document to be fully loaded before running the app
-document.addEventListener('DOMContentLoaded', initializeApp);
+// --- START THE APP ---
+// This listener waits for the page to be fully ready, then calls our main function.
+document.addEventListener('DOMContentLoaded', main);
