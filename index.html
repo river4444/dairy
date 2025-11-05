@@ -16,31 +16,26 @@
             </label>
         </div>
     </header>
-    <main id="app-container">
-        
+
+    <!-- The entire app is now hidden by default with the "hidden" class -->
+    <main id="app-container" class="hidden">
         <div class="controls">
             <label for="diary-date">Select a date:</label>
             <input type="date" id="diary-date">
         </div>
-
         <textarea id="diary-entry" placeholder="Write your thoughts for the day..."></textarea>
-        
-        <!-- NEW: PRIORITIES SECTION -->
         <div class="input-section">
             <h3>Top 3 Priorities</h3>
             <input type="text" id="priority-1" class="small-input" placeholder="Priority #1">
             <input type="text" id="priority-2" class="small-input" placeholder="Priority #2">
             <input type="text" id="priority-3" class="small-input" placeholder="Priority #3">
         </div>
-
-        <!-- NEW: GRATITUDE SECTION -->
         <div class="input-section">
             <h3>3 Gratitude Items</h3>
             <input type="text" id="gratitude-1" class="small-input" placeholder="I am grateful for...">
             <input type="text" id="gratitude-2" class="small-input" placeholder="I am grateful for...">
             <input type="text" id="gratitude-3" class="small-input" placeholder="I am grateful for...">
         </div>
-
         <div id="checklist-section">
             <button class="collapsible-header">
                 <h2>Daily Habits</h2>
@@ -50,10 +45,7 @@
                 <div id="checklist-container"></div>
             </div>
         </div>
-
-        <button id="save-button">Save Entry & Habits</button>
-        <p id="status-message"></p>
-
+        <!-- SAVE BUTTON AND STATUS MESSAGE HAVE BEEN REMOVED -->
         <div id="habit-tracker-section">
             <button class="collapsible-header">
                 <h2>Last 30 Days Stats</h2>
@@ -63,8 +55,13 @@
                 <div id="tracker-stats">Loading stats...</div>
             </div>
         </div>
-
     </main>
+
+    <!-- This message shows when the app is hidden -->
+    <div id="access-denied-message">
+        <p>Please use your master URL to access the diary.</p>
+    </div>
+
     <script type="module" src="./app.js"></script>
 </body>
 </html>
