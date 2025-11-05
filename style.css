@@ -109,7 +109,14 @@ input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(24px); }
 .input-section { margin-bottom: 25px; }
 .input-section h3 { font-size: 1rem; font-weight: 500; margin-top: 0; margin-bottom: 15px; color: var(--secondary-text-color); }
-.small-input { width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+.small-input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    /* NEW: Add resizing properties */
+    resize: none;
+    overflow-y: hidden;
+}
 .small-input:last-child { margin-bottom: 0; }
 
 /* --- NEW STYLES --- */
