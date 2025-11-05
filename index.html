@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>My Diary & Habit Tracker</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     <header>
-
+        <h1>My Diary & Tracker</h1>
         <div class="theme-switch-wrapper">
             <label class="theme-switch" for="theme-toggle">
                 <input type="checkbox" id="theme-toggle" />
@@ -25,9 +25,25 @@
 
         <textarea id="diary-entry" placeholder="Write your thoughts for the day..."></textarea>
         
+        <!-- NEW: PRIORITIES SECTION -->
+        <div class="input-section">
+            <h3>Top 3 Priorities</h3>
+            <input type="text" id="priority-1" class="small-input" placeholder="Priority #1">
+            <input type="text" id="priority-2" class="small-input" placeholder="Priority #2">
+            <input type="text" id="priority-3" class="small-input" placeholder="Priority #3">
+        </div>
+
+        <!-- NEW: GRATITUDE SECTION -->
+        <div class="input-section">
+            <h3>3 Gratitude Items</h3>
+            <input type="text" id="gratitude-1" class="small-input" placeholder="I am grateful for...">
+            <input type="text" id="gratitude-2" class="small-input" placeholder="I am grateful for...">
+            <input type="text" id="gratitude-3" class="small-input" placeholder="I am grateful for...">
+        </div>
+
         <div id="checklist-section">
             <button class="collapsible-header">
-    
+                <h2>Daily Habits</h2>
                 <span class="arrow">▼</span>
             </button>
             <div class="collapsible-content">
@@ -38,10 +54,9 @@
         <button id="save-button">Save Entry & Habits</button>
         <p id="status-message"></p>
 
-        <!-- UPDATED: Habit tracker now uses the same collapsible structure -->
         <div id="habit-tracker-section">
             <button class="collapsible-header">
-       
+                <h2>Last 30 Days Stats</h2>
                 <span class="arrow">▼</span>
             </button>
             <div class="collapsible-content">
