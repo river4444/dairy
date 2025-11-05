@@ -18,6 +18,7 @@
     --accent-color-hover: #3a9fff;
 }
 
+/* --- Base Styles (Mostly Unchanged) --- */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
@@ -29,7 +30,6 @@ body {
     align-items: center;
     transition: background-color 0.3s, color 0.3s;
 }
-
 header {
     width: 100%;
     max-width: 680px;
@@ -38,10 +38,8 @@ header {
     align-items: center;
     margin-bottom: 20px;
 }
-
 h1 { font-weight: 600; }
 h2 { font-weight: 500; font-size: 1.2rem; }
-
 #app-container {
     width: 100%;
     max-width: 680px;
@@ -52,7 +50,6 @@ h2 { font-weight: 500; font-size: 1.2rem; }
     border: 1px solid var(--border-color);
     transition: background-color 0.3s, border-color 0.3s;
 }
-
 .controls { margin-bottom: 15px; }
 
 #diary-date, #diary-entry {
@@ -63,16 +60,14 @@ h2 { font-weight: 500; font-size: 1.2rem; }
     background-color: var(--bg-color);
     color: var(--text-color);
 }
-
 #diary-entry {
     width: 100%;
-    min-height: 120px; /* Set a minimum height */
+    min-height: 120px;
     box-sizing: border-box;
-    resize: none; /* Disable manual resizing */
-    overflow-y: hidden; /* Hide scrollbar, as it will auto-expand */
+    resize: none;
+    overflow-y: hidden;
     margin-bottom: 25px;
 }
-
 button {
     padding: 12px 20px;
     font-size: 16px;
@@ -86,14 +81,13 @@ button {
 }
 button:hover { background-color: var(--accent-color-hover); }
 button:active { transform: scale(0.98); }
-
 #save-button {
     width: 100%;
-    margin-bottom: 30px;
+    margin-top: 25px; /* Added margin to separate from habits */
 }
-
 #status-message { margin-top: 15px; color: green; }
 
+/* --- Collapsible Section Styles (Unchanged) --- */
 .collapsible-header {
     background-color: transparent;
     color: var(--text-color);
@@ -109,6 +103,7 @@ button:active { transform: scale(0.98); }
     align-items: center;
     margin: 20px 0 0 0;
 }
+#habit-tracker-section .collapsible-header { margin-top: 30px; }
 .collapsible-header h2 { margin: 0; }
 .collapsible-header .arrow { transition: transform 0.3s ease; }
 .collapsible-header.active .arrow { transform: rotate(180deg); }
@@ -122,7 +117,6 @@ button:active { transform: scale(0.98); }
 #checklist-container, #tracker-stats {
     padding-top: 20px;
 }
-
 .habit-item { display: block; margin-bottom: 12px; font-size: 18px; }
 .habit-item label { cursor: pointer; display: flex; align-items: center; }
 .habit-item input[type="checkbox"] { margin-right: 12px; transform: scale(1.3); }
@@ -132,6 +126,7 @@ button:active { transform: scale(0.98); }
 .tracker-bar-container { width: 100%; background-color: var(--bg-color); border-radius: 4px; overflow: hidden; }
 .tracker-bar { height: 20px; background-color: var(--accent-color); border-radius: 4px; transition: width 0.5s ease-in-out; text-align: center; color: white; line-height: 20px; font-size: 12px; }
 
+/* --- Dark Mode Toggle (Unchanged) --- */
 .theme-switch-wrapper { display: flex; align-items: center; }
 .theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
 .theme-switch input { opacity: 0; width: 0; height: 0; }
@@ -140,8 +135,28 @@ button:active { transform: scale(0.98); }
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(24px); }
 
-/* --- NEW: Obscured Text for Privacy --- */
-.obscured-text {
-    -webkit-text-security: disc; /* Makes text appear as dots, like a password */
-    text-security: disc;
+/* --- NEW STYLES for Priorities & Gratitude --- */
+.input-section {
+    margin-bottom: 25px;
+}
+.input-section h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--secondary-text-color);
+}
+.small-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+.small-input:last-child {
+    margin-bottom: 0;
 }
