@@ -10,7 +10,6 @@ const firebaseConfig = {
     messagingSenderId: "50167451169",
     appId: "1:50167451169:web:5ea9cffde6db860ff7dd60"
 };
-
 const HABITS = [
     { id: 'sunlight', text: 'Got morning sunlight' },
     { id: 'exercise', text: 'Exercised for 20+ minutes' },
@@ -22,7 +21,6 @@ const HABITS = [
     { id: 'noPhoneBed', text: 'No phone 1 hour before bed' }
 ];
 const diaryCollectionId = 'public-diary';
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -35,13 +33,33 @@ const main = () => {
     const themeToggle = document.getElementById('theme-toggle');
     const trackerStatsContainer = document.getElementById('tracker-stats');
 
-    const getTodaysDate = () => {
+    // --- NEW: Function to handle auto-resizing textarea ---
+    const setupAutoResizeTextarea = () => {
+        const resizeTextarea = () => {
+            entryTextarea.style.height = 'auto'; // Reset height
+            entryTextarea.style.height = (entryTextarea.scrollHeight) + 'px'; // Set to content height
+        };
+        entryTextarea.addEventListener('input', resizeTextarea);
+        // Also call it once on load in case there's existing text
+        setTimeout(resizeTextarea, 0); 
+    };
+
+    // --- NEW: Master User Privacy Check ---
+    const checkMasterUser = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isMaster = urlParams.get('master') === 'true';
+        if (!isMaster) {
+            entryTextarea.classList.add('obscured-text');
+        }
+    };
+
+    const getTodaysDate = () => { /* ... unchanged ... */
         const today = new Date();
         const offset = today.getTimezoneOffset();
         return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
     };
 
-    const renderChecklist = () => {
+    const renderChecklist = () => { /* ... unchanged ... */
         checklistContainer.innerHTML = '';
         HABITS.forEach(habit => {
             const itemDiv = document.createElement('div');
@@ -51,8 +69,7 @@ const main = () => {
         });
     };
 
-    const loadEntryForDate = async (dateStr) => {
-        // Unchanged
+    const loadEntryForDate = async (dateStr) => { /* ... unchanged ... */
         if (!dateStr) return;
         entryTextarea.value = 'Loading...';
         const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
@@ -77,11 +94,14 @@ const main = () => {
         } catch (error) {
             console.error("Error loading entry:", error);
             entryTextarea.value = 'Error loading entry.';
+        } finally {
+            // Ensure textarea is resized after loading content
+            const resizeEvent = new Event('input');
+            entryTextarea.dispatchEvent(resizeEvent);
         }
     };
 
-    const saveEntry = async () => {
-        // Unchanged
+    const saveEntry = async () => { /* ... unchanged ... */
         const dateStr = dateInput.value;
         const content = entryTextarea.value;
         const habitsToSave = {};
@@ -101,8 +121,7 @@ const main = () => {
         }
     };
     
-    const updateHabitTracker = async () => {
-        // Unchanged
+    const updateHabitTracker = async () => { /* ... unchanged ... */
         trackerStatsContainer.innerHTML = 'Calculating...';
         const habitCounts = {};
         HABITS.forEach(h => habitCounts[h.id] = 0);
@@ -131,8 +150,7 @@ const main = () => {
         });
     };
 
-    const setupThemeToggle = () => {
-        // Unchanged
+    const setupThemeToggle = () => { /* ... unchanged ... */
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -149,13 +167,12 @@ const main = () => {
         });
     };
 
-    // --- UPDATED to handle MULTIPLE collapsible sections ---
-    const setupCollapsibles = () => {
+    const setupCollapsibles = () => { /* ... unchanged ... */
         const headers = document.querySelectorAll('.collapsible-header');
         headers.forEach(header => {
             header.addEventListener('click', () => {
                 header.classList.toggle('active');
-                const content = header.nextElementSibling; // Get the content div right after the button
+                const content = header.nextElementSibling;
                 if (content.style.maxHeight) {
                     content.style.maxHeight = null;
                 } else {
@@ -169,7 +186,9 @@ const main = () => {
     dateInput.value = getTodaysDate();
     renderChecklist();
     setupThemeToggle();
-    setupCollapsibles(); // Use the new plural function name
+    setupCollapsibles();
+    setupAutoResizeTextarea(); // <-- ADDED
+    checkMasterUser(); // <-- ADDED
     loadEntryForDate(dateInput.value);
     updateHabitTracker();
     dateInput.addEventListener('change', () => loadEntryForDate(dateInput.value));
