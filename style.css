@@ -4,7 +4,7 @@
     --card-bg-color: #ffffff;
     --text-color: #333333;
     --secondary-text-color: #555555;
-    --border-color: #e0e0e0; /* Made border lighter */
+    --border-color: #e0e0e0;
     --accent-color: #007bff;
     --accent-color-hover: #0056b3;
 }
@@ -13,7 +13,7 @@
     --card-bg-color: #1e1e1e;
     --text-color: #e0e0e0;
     --secondary-text-color: #bbbbbb;
-    --border-color: #333333; /* Made border lighter in dark mode */
+    --border-color: #333333;
     --accent-color: #0d8eff;
     --accent-color-hover: #3a9fff;
 }
@@ -32,7 +32,7 @@ body {
 
 header {
     width: 100%;
-    max-width: 680px; /* Made container slightly narrower */
+    max-width: 680px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -44,11 +44,11 @@ h2 { font-weight: 500; font-size: 1.2rem; }
 
 #app-container {
     width: 100%;
-    max-width: 680px; /* Narrower for better readability */
+    max-width: 680px;
     background: var(--card-bg-color);
-    padding: 30px; /* Increased padding for more whitespace */
-    border-radius: 12px; /* Softer radius */
-    box-shadow: 0 4px 25px rgba(0,0,0,0.05); /* Softer, more subtle shadow */
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.05);
     border: 1px solid var(--border-color);
     transition: background-color 0.3s, border-color 0.3s;
 }
@@ -59,20 +59,21 @@ h2 { font-weight: 500; font-size: 1.2rem; }
     padding: 12px;
     font-size: 16px;
     border: 1px solid var(--border-color);
-    border-radius: 8px; /* Softer radius */
+    border-radius: 8px;
     background-color: var(--bg-color);
     color: var(--text-color);
 }
 
 #diary-entry {
     width: 100%;
-    height: 150px;
+    min-height: 120px; /* Set a minimum height */
     box-sizing: border-box;
-    resize: vertical;
-    margin-bottom: 25px; /* Increased spacing */
+    resize: none; /* Disable manual resizing */
+    overflow-y: hidden; /* Hide scrollbar, as it will auto-expand */
+    margin-bottom: 25px;
 }
 
-button { /* Styles for all buttons */
+button {
     padding: 12px 20px;
     font-size: 16px;
     font-weight: 500;
@@ -88,20 +89,19 @@ button:active { transform: scale(0.98); }
 
 #save-button {
     width: 100%;
-    margin-bottom: 30px; /* Spacing before stats section */
+    margin-bottom: 30px;
 }
 
 #status-message { margin-top: 15px; color: green; }
 
-/* --- REFINED Collapsible Section Styles --- */
 .collapsible-header {
     background-color: transparent;
     color: var(--text-color);
     cursor: pointer;
-    padding: 15px 5px; /* Added padding */
+    padding: 15px 5px;
     width: 100%;
     border: none;
-    border-top: 1px dashed var(--border-color); /* Softer dashed border */
+    border-top: 1px dashed var(--border-color);
     text-align: left;
     outline: none;
     display: flex;
@@ -113,27 +113,25 @@ button:active { transform: scale(0.98); }
 .collapsible-header .arrow { transition: transform 0.3s ease; }
 .collapsible-header.active .arrow { transform: rotate(180deg); }
 .collapsible-content {
-    padding: 0 5px; /* Added padding */
+    padding: 0 5px;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
     background-color: transparent;
 }
 #checklist-container, #tracker-stats {
-    padding-top: 20px; /* Spacing inside collapsible content */
+    padding-top: 20px;
 }
 
-/* --- Habit Checklist & Tracker Styles (Mostly Unchanged) --- */
 .habit-item { display: block; margin-bottom: 12px; font-size: 18px; }
 .habit-item label { cursor: pointer; display: flex; align-items: center; }
 .habit-item input[type="checkbox"] { margin-right: 12px; transform: scale(1.3); }
 
-.tracker-item { margin-bottom: 15px; } /* Increased spacing */
+.tracker-item { margin-bottom: 15px; }
 .tracker-label { display: flex; justify-content: space-between; margin-bottom: 8px; }
 .tracker-bar-container { width: 100%; background-color: var(--bg-color); border-radius: 4px; overflow: hidden; }
 .tracker-bar { height: 20px; background-color: var(--accent-color); border-radius: 4px; transition: width 0.5s ease-in-out; text-align: center; color: white; line-height: 20px; font-size: 12px; }
 
-/* --- Dark Mode Toggle (Unchanged) --- */
 .theme-switch-wrapper { display: flex; align-items: center; }
 .theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
 .theme-switch input { opacity: 0; width: 0; height: 0; }
@@ -141,3 +139,9 @@ button:active { transform: scale(0.98); }
 .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(24px); }
+
+/* --- NEW: Obscured Text for Privacy --- */
+.obscured-text {
+    -webkit-text-security: disc; /* Makes text appear as dots, like a password */
+    text-security: disc;
+}
