@@ -1,4 +1,3 @@
-/* --- Theming Variables (Unchanged) --- */
 :root {
     --bg-color: #f4f4f9;
     --card-bg-color: #ffffff;
@@ -17,8 +16,6 @@
     --accent-color: #0d8eff;
     --accent-color-hover: #3a9fff;
 }
-
-/* --- Base Styles (Mostly Unchanged) --- */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
@@ -51,8 +48,7 @@ h2 { font-weight: 500; font-size: 1.2rem; }
     transition: background-color 0.3s, border-color 0.3s;
 }
 .controls { margin-bottom: 15px; }
-
-#diary-date, #diary-entry {
+#diary-date, #diary-entry, .small-input {
     padding: 12px;
     font-size: 16px;
     border: 1px solid var(--border-color);
@@ -68,26 +64,6 @@ h2 { font-weight: 500; font-size: 1.2rem; }
     overflow-y: hidden;
     margin-bottom: 25px;
 }
-button {
-    padding: 12px 20px;
-    font-size: 16px;
-    font-weight: 500;
-    color: #fff;
-    background-color: var(--accent-color);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-}
-button:hover { background-color: var(--accent-color-hover); }
-button:active { transform: scale(0.98); }
-#save-button {
-    width: 100%;
-    margin-top: 25px; /* Added margin to separate from habits */
-}
-#status-message { margin-top: 15px; color: green; }
-
-/* --- Collapsible Section Styles (Unchanged) --- */
 .collapsible-header {
     background-color: transparent;
     color: var(--text-color);
@@ -120,13 +96,10 @@ button:active { transform: scale(0.98); }
 .habit-item { display: block; margin-bottom: 12px; font-size: 18px; }
 .habit-item label { cursor: pointer; display: flex; align-items: center; }
 .habit-item input[type="checkbox"] { margin-right: 12px; transform: scale(1.3); }
-
 .tracker-item { margin-bottom: 15px; }
 .tracker-label { display: flex; justify-content: space-between; margin-bottom: 8px; }
 .tracker-bar-container { width: 100%; background-color: var(--bg-color); border-radius: 4px; overflow: hidden; }
 .tracker-bar { height: 20px; background-color: var(--accent-color); border-radius: 4px; transition: width 0.5s ease-in-out; text-align: center; color: white; line-height: 20px; font-size: 12px; }
-
-/* --- Dark Mode Toggle (Unchanged) --- */
 .theme-switch-wrapper { display: flex; align-items: center; }
 .theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
 .theme-switch input { opacity: 0; width: 0; height: 0; }
@@ -134,29 +107,17 @@ button:active { transform: scale(0.98); }
 .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(24px); }
+.input-section { margin-bottom: 25px; }
+.input-section h3 { font-size: 1rem; font-weight: 500; margin-top: 0; margin-bottom: 15px; color: var(--secondary-text-color); }
+.small-input { width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+.small-input:last-child { margin-bottom: 0; }
 
-/* --- NEW STYLES for Priorities & Gratitude --- */
-.input-section {
-    margin-bottom: 25px;
+/* --- NEW STYLES --- */
+.hidden {
+    display: none;
 }
-.input-section h3 {
-    font-size: 1rem;
-    font-weight: 500;
-    margin-top: 0;
-    margin-bottom: 15px;
+#access-denied-message {
+    text-align: center;
     color: var(--secondary-text-color);
-}
-.small-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    margin-bottom: 10px;
-}
-.small-input:last-child {
-    margin-bottom: 0;
+    margin-top: 50px;
 }
