@@ -28,20 +28,16 @@ const main = () => {
     const appContainer = document.getElementById('app-container');
     const accessDeniedMessage = document.getElementById('access-denied-message');
 
-    // --- MASTER VIEW LOGIC ---
     const urlParams = new URLSearchParams(window.location.search);
     const isMaster = urlParams.get('master') === 'true';
 
     if (!isMaster) {
-        // If not a master user, do nothing else. The app remains hidden.
         return; 
     }
 
-    // If we get here, it's a master user. Reveal the app and hide the message.
     appContainer.classList.remove('hidden');
     accessDeniedMessage.classList.add('hidden');
     
-    // --- DOM ELEMENTS (now safe to access) ---
     const dateInput = document.getElementById('diary-date');
     const entryTextarea = document.getElementById('diary-entry');
     const checklistContainer = document.getElementById('checklist-container');
@@ -50,13 +46,12 @@ const main = () => {
     const priorityInputs = document.querySelectorAll('#priority-1, #priority-2, #priority-3');
     const gratitudeInputs = document.querySelectorAll('#gratitude-1, #gratitude-2, #gratitude-3');
 
-    // --- AUTOSAVE LOGIC ---
     let debounceTimeout;
     const triggerAutosave = () => {
-        clearTimeout(debounceTimeout); // Reset the timer
+        clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => {
             saveEntry();
-        }, 1500); // Save 1.5 seconds after the user stops typing
+        }, 1500);
     };
 
     const saveEntry = async () => {
@@ -72,7 +67,7 @@ const main = () => {
         const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
         try {
             await setDoc(entryRef, { content, habits: habitsToSave, priorities: prioritiesToSave, gratitude: gratitudeToSave });
-            console.log(`Autosaved for ${dateStr}`); // Log to console instead of showing a message
+            console.log(`Autosaved for ${dateStr}`);
             updateHabitTracker();
         } catch (error) {
             console.error("Error autosaving entry: ", error);
@@ -123,28 +118,97 @@ const main = () => {
             itemDiv.innerHTML = `<label><input type="checkbox" id="habit-${habit.id}" class="autosave-trigger"><span>${habit.text}</span></label>`;
             checklistContainer.appendChild(itemDiv);
         });
-        // Attach event listeners to newly created checkboxes
         document.querySelectorAll('.autosave-trigger').forEach(el => el.addEventListener('change', triggerAutosave));
     };
     
-    // --- Other functions (unchanged) ---
-    const updateHabitTracker = async () => { /* ... same as before ... */ };
-    const setupThemeToggle = () => { /* ... same as before ... */ };
-    const setupCollapsibles = () => { /* ... same as before ... */ };
-    const setupAutoResizeTextarea = () => { /* ... same as before ... */ };
-    const getTodaysDate = () => { /* ... same as before ... */ };
+    // --- COMPLETE HELPER FUNCTIONS ---
+    const getTodaysDate = () => {
+        const today = new Date();
+        const offset = today.getTimezoneOffset();
+        return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+    };
+
+    const setupAutoResizeTextarea = () => {
+        const resizeTextarea = () => {
+            entryTextarea.style.height = 'auto';
+            entryTextarea.style.height = (entryTextarea.scrollHeight) + 'px';
+        };
+        entryTextarea.addEventListener('input', resizeTextarea);
+        setTimeout(resizeTextarea, 0); 
+    };
+
+    const updateHabitTracker = async () => {
+        trackerStatsContainer.innerHTML = 'Calculating...';
+        const habitCounts = {};
+        HABITS.forEach(h => habitCounts[h.id] = 0);
+        const promises = [];
+        for (let i = 0; i < 30; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
+            promises.push(getDoc(entryRef));
+        }
+        const snapshots = await Promise.all(promises);
+        snapshots.forEach(docSnap => {
+            if (docSnap.exists()) {
+                const habitsData = docSnap.data().habits || {};
+                HABITS.forEach(habit => {
+                    if (habitsData[habit.id]) habitCounts[habit.id]++;
+                });
+            }
+        });
+        trackerStatsContainer.innerHTML = '';
+        HABITS.forEach(habit => {
+            const count = habitCounts[habit.id];
+            const percentage = Math.round((count / 30) * 100);
+            trackerStatsContainer.innerHTML += `<div class="tracker-item"><div class="tracker-label"><span>${habit.text}</span><span>${count}/30 days</span></div><div class="tracker-bar-container"><div class="tracker-bar" style="width: ${percentage}%;">${percentage}%</div></div></div>`;
+        });
+    };
+
+    const setupThemeToggle = () => {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggle.checked = true;
+        }
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    };
+
+    const setupCollapsibles = () => {
+        const headers = document.querySelectorAll('.collapsible-header');
+        headers.forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('active');
+                const content = header.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+        });
+    };
     
     // --- INITIALIZE THE APP ---
-    dateInput.value = getTodaysDate();
+    dateInput.value = getTodaysDate(); // This will now work
     renderChecklist();
-    setupThemeToggle();
-    setupCollapsibles();
+    setupThemeToggle(); // This will now work
+    setupCollapsibles(); // This will now work
     setupAutoResizeTextarea();
     loadEntryForDate(dateInput.value);
     updateHabitTracker();
 
     // Attach Autosave Event Listeners
-    dateInput.addEventListener('change', () => loadEntryForDate(dateInput.value)); // Changing date loads, doesn't save
+    dateInput.addEventListener('change', () => loadEntryForDate(dateInput.value));
     entryTextarea.addEventListener('input', triggerAutosave);
     priorityInputs.forEach(input => input.addEventListener('input', triggerAutosave));
     gratitudeInputs.forEach(input => input.addEventListener('input', triggerAutosave));
