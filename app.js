@@ -35,17 +35,17 @@ const main = () => {
     if (urlParams.get('master') !== 'true') {
         return; // Stop execution if not master user
     }
-
-    // If master, show the app
     viewSwitcher.classList.remove('hidden');
     accessDeniedMessage.classList.add('hidden');
     
     // --- DOM ELEMENTS ---
     const dateInput = document.getElementById('diary-date');
     const entryTextarea = document.getElementById('diary-entry');
+    const foodLogTextarea = document.getElementById('food-log-entry'); // NEW
     const checklistContainer = document.getElementById('checklist-container');
     const themeToggle = document.getElementById('theme-toggle');
     const trackerStatsContainer = document.getElementById('tracker-stats');
+    const monthlyStatsMonthLabel = document.getElementById('monthly-stats-month-label'); // NEW
     const priorityInputs = document.querySelectorAll('#priority-1, #priority-2, #priority-3');
     const gratitudeInputs = document.querySelectorAll('#gratitude-1, #gratitude-2, #gratitude-3');
     const dailyViewBtn = document.getElementById('daily-view-btn');
@@ -103,12 +103,7 @@ const main = () => {
                 const habitsDone = HABITS.filter(h => entry.habits && entry.habits[h.id]).length;
                 const completion = HABITS.length > 0 ? habitsDone / HABITS.length : 0;
                 const completionPercent = completion * 100;
-
-                // --- MODIFIED ---
-                // Fills the cell vertically from the bottom based on habit completion percentage.
                 dayDiv.style.background = `linear-gradient(to top, var(--accent-color) ${completionPercent}%, var(--level-0) ${completionPercent}%)`;
-
-                // If the filled area is significant, switch text to white for better readability.
                 if (completion > 0.5) {
                     dayDiv.style.color = 'white';
                 }
@@ -146,6 +141,7 @@ const main = () => {
     const saveEntry = async () => {
         const dateStr = dateInput.value;
         const content = entryTextarea.value;
+        const foodLog = foodLogTextarea.value; // NEW
         const habitsToSave = {};
         HABITS.forEach(habit => {
             const checkbox = document.getElementById(`habit-${habit.id}`);
@@ -155,9 +151,10 @@ const main = () => {
         const gratitudeToSave = Array.from(gratitudeInputs).map(input => input.value);
         const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
         try {
-            await setDoc(entryRef, { content, habits: habitsToSave, priorities: prioritiesToSave, gratitude: gratitudeToSave });
+            await setDoc(entryRef, { content, foodLog, habits: habitsToSave, priorities: prioritiesToSave, gratitude: gratitudeToSave }); // ADDED foodLog
             console.log(`Autosaved for ${dateStr}`);
-            updateHabitTracker();
+            const [year, month] = dateStr.split('-').map(Number);
+            updateMonthlyStats(year, month - 1); // Refresh stats on save
         } catch (error) {
             console.error("Error autosaving entry: ", error);
         }
@@ -166,6 +163,7 @@ const main = () => {
     const loadEntryForDate = async (dateStr) => {
         if (!dateStr) return;
         entryTextarea.value = 'Loading...';
+        foodLogTextarea.value = ''; // NEW
         priorityInputs.forEach(input => input.value = '');
         gratitudeInputs.forEach(input => input.value = '');
         
@@ -175,6 +173,7 @@ const main = () => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 entryTextarea.value = data.content || '';
+                foodLogTextarea.value = data.foodLog || ''; // NEW
                 const habitsData = data.habits || {};
                 HABITS.forEach(habit => {
                     const checkbox = document.getElementById(`habit-${habit.id}`);
@@ -186,6 +185,7 @@ const main = () => {
                 gratitudeInputs.forEach((input, index) => input.value = gratitudeData[index] || '');
             } else {
                 entryTextarea.value = '';
+                foodLogTextarea.value = ''; // NEW
                 priorityInputs.forEach(input => input.value = '');
                 gratitudeInputs.forEach(input => input.value = '');
                 HABITS.forEach(habit => {
@@ -200,6 +200,8 @@ const main = () => {
                 textarea.style.height = 'auto';
                 textarea.style.height = textarea.scrollHeight + 'px';
             });
+            const [year, month] = dateStr.split('-').map(Number);
+            updateMonthlyStats(year, month - 1); // Update stats for the viewed month
         }
     };
 
@@ -220,32 +222,45 @@ const main = () => {
         return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
     };
 
-    const updateHabitTracker = async () => {
+    // --- REWRITTEN: Stats function is now month-based ---
+    const updateMonthlyStats = async (year, month) => {
         trackerStatsContainer.innerHTML = 'Calculating...';
+        const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
+        monthlyStatsMonthLabel.textContent = monthName;
+
         const habitCounts = {};
         HABITS.forEach(h => habitCounts[h.id] = 0);
-        const promises = [];
-        for (let i = 0; i < 30; i++) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
-            const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
-            promises.push(getDoc(entryRef));
-        }
-        const snapshots = await Promise.all(promises);
-        snapshots.forEach(docSnap => {
-            if (docSnap.exists()) {
-                const habitsData = docSnap.data().habits || {};
+
+        const monthData = await fetchMonthData(year, month);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (const dateStr in monthData) {
+            const entry = monthData[dateStr];
+            if (entry.habits) {
                 HABITS.forEach(habit => {
-                    if (habitsData[habit.id]) habitCounts[habit.id]++;
+                    if (entry.habits[habit.id]) {
+                        habitCounts[habit.id]++;
+                    }
                 });
             }
-        });
+        }
+        
         trackerStatsContainer.innerHTML = '';
         HABITS.forEach(habit => {
             const count = habitCounts[habit.id];
-            const percentage = Math.round((count / 30) * 100);
-            trackerStatsContainer.innerHTML += `<div class="tracker-item"><div class="tracker-label"><span>${habit.text}</span><span>${count}/30 days</span></div><div class="tracker-bar-container"><div class="tracker-bar" style="width: ${percentage}%;">${percentage}%</div></div></div>`;
+            const percentage = Math.round((count / daysInMonth) * 100);
+            trackerStatsContainer.innerHTML += `
+                <div class="tracker-item">
+                    <div class="tracker-label">
+                        <span>${habit.text}</span>
+                        <span>${count}/${daysInMonth} days</span>
+                    </div>
+                    <div class="tracker-bar-container">
+                        <div class="tracker-bar" style="width: ${percentage}%;">
+                            ${percentage}%
+                        </div>
+                    </div>
+                </div>`;
         });
     };
 
@@ -293,14 +308,13 @@ const main = () => {
     };
     
     // --- INITIALIZE THE APP ---
-    switchToDailyView(); // Start on the daily view by default
+    switchToDailyView();
     dateInput.value = getTodaysDate();
     renderChecklist();
     setupThemeToggle();
     setupCollapsibles();
     setupAutoResizeTextareas();
-    loadEntryForDate(dateInput.value);
-    updateHabitTracker();
+    loadEntryForDate(dateInput.value); // This will also trigger the initial stats update
     
     // Event Listeners
     dailyViewBtn.addEventListener('click', switchToDailyView);
@@ -315,6 +329,7 @@ const main = () => {
     });
     dateInput.addEventListener('change', () => loadEntryForDate(dateInput.value));
     entryTextarea.addEventListener('input', triggerAutosave);
+    foodLogTextarea.addEventListener('input', triggerAutosave); // NEW
     priorityInputs.forEach(input => input.addEventListener('input', triggerAutosave));
     gratitudeInputs.forEach(input => input.addEventListener('input', triggerAutosave));
 };
