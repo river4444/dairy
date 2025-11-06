@@ -32,7 +32,6 @@
   </header>
 
   <main id="app-root">
-    <!-- Two-column desktop layout. On small screens it stacks -->
     <section id="left-col" class="pane left-pane">
       <div class="card" id="daily-card">
         <div class="card-header">
@@ -55,7 +54,6 @@
           <button id="expand-gratitude" class="mini-btn">Add Gratitude</button>
         </div>
 
-        <!-- Collapsible optional sections (start collapsed) -->
         <div class="optional-sections">
           <div class="optional" data-key="wins">
             <button class="optional-toggle">Wins <span class="chev">▾</span></button>
@@ -74,7 +72,6 @@
           <div class="optional" data-key="priorities">
             <button class="optional-toggle">Priorities <span class="chev">▾</span></button>
             <div class="optional-body hidden">
-              <!-- Simple dynamic priorities list -->
               <div id="priorities-list" class="priorities-list"></div>
               <button id="add-priority" class="link-btn">+ Add priority</button>
             </div>
@@ -90,7 +87,8 @@
         </div>
       </div>
 
-      <div id="mobile-bottom-nav" class="mobile-bottom nav-hidden">
+      <!-- FIX: Removed the confusing 'nav-hidden' class. CSS will now handle visibility. -->
+      <div id="mobile-bottom-nav" class="mobile-bottom">
         <button id="mb-daily" class="mb-btn active">Daily</button>
         <button id="mb-calendar" class="mb-btn">Calendar</button>
         <button id="mb-stats" class="mb-btn">Stats</button>
@@ -120,7 +118,6 @@
     </aside>
   </main>
 
-  <!-- Calendar + Stats panes (show/hide by top tabs) -->
   <div id="calendar-pane" class="overlay-pane hidden">
     <div class="card large">
       <div class="calendar-header">
