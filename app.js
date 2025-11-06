@@ -37,7 +37,7 @@ const main = () => {
     }
 
     // If master, show the app
-    viewSwitcher.classList.remove('hidden'); // This might not be needed if it's never hidden, but safe
+    viewSwitcher.classList.remove('hidden');
     accessDeniedMessage.classList.add('hidden');
     
     // --- DOM ELEMENTS ---
@@ -102,13 +102,16 @@ const main = () => {
                 const entry = monthData[dateStr];
                 const habitsDone = HABITS.filter(h => entry.habits && entry.habits[h.id]).length;
                 const completion = HABITS.length > 0 ? habitsDone / HABITS.length : 0;
-                
-                let level = 0;
-                if (completion > 0) level = 1;
-                if (completion >= 0.5) level = 2;
-                if (completion >= 0.75) level = 3;
-                if (completion === 1) level = 4;
-                if (level > 0) dayDiv.classList.add(`level-${level}`);
+                const completionPercent = completion * 100;
+
+                // --- MODIFIED ---
+                // Fills the cell vertically from the bottom based on habit completion percentage.
+                dayDiv.style.background = `linear-gradient(to top, var(--accent-color) ${completionPercent}%, var(--level-0) ${completionPercent}%)`;
+
+                // If the filled area is significant, switch text to white for better readability.
+                if (completion > 0.5) {
+                    dayDiv.style.color = 'white';
+                }
             }
 
             dayDiv.addEventListener('click', () => {
