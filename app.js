@@ -391,6 +391,7 @@ async function updateMonthlyStatsFromUI() {
   results.forEach(r => {
     if(r.data && r.data.habits){
       HABITS.forEach(h => { if(r.data.habits[h.id]) counts[h.id]++; });
+        
     }
   });
 
