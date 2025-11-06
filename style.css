@@ -1,17 +1,13 @@
 :root {
-    --bg-color: #f8f9fa; /* Lighter background */
+    --bg-color: #f8f9fa;
     --card-bg-color: #ffffff;
-    --text-color: #212529; /* Darker, higher contrast text */
+    --text-color: #212529;
     --secondary-text-color: #6c757d;
     --border-color: #dee2e6;
     --accent-color: #007bff;
     --accent-color-hover: #0069d9;
-    /* NEW: Color scale for calendar */
-    --level-0: #ebedf0;
-    --level-1: #9be9a8;
-    --level-2: #40c463;
-    --level-3: #30a14e;
-    --level-4: #216e39;
+    /* MODIFIED: Removed level colors, as JS now handles the fill */
+    --level-0: #ebedf0; /* Base color for empty calendar days */
 }
 [data-theme="dark"] {
     --bg-color: #0d1117;
@@ -21,15 +17,12 @@
     --border-color: #30363d;
     --accent-color: #1f6feb;
     --accent-color-hover: #388bfd;
-    /* Dark mode color scale */
     --level-0: #2d333b;
-    --level-1: #0e4429;
-    --level-2: #006d32;
-    --level-3: #26a641;
-    --level-4: #39d353;
 }
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* MODIFIED: Font changed to Nunito Sans and base weight set for readability */
+    font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 400;
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
@@ -41,9 +34,12 @@ body {
 }
 header, #app-container, #calendar-container, #view-switcher {
     width: 100%;
-    max-width: 720px; /* Slightly wider for calendar */
+    max-width: 720px;
 }
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+h1, h2, h3 {
+    font-weight: 700; /* Bolder headings for clarity */
+}
 #app-container, #calendar-container {
     background: var(--card-bg-color);
     padding: 30px;
@@ -54,7 +50,7 @@ header { display: flex; justify-content: space-between; align-items: center; mar
 }
 .hidden { display: none !important; }
 
-/* --- NEW: View Switcher Styles --- */
+/* --- View Switcher Styles --- */
 #view-switcher { display: flex; margin-bottom: 20px; gap: 10px; }
 .view-btn {
     flex-grow: 1;
@@ -64,7 +60,7 @@ header { display: flex; justify-content: space-between; align-items: center; mar
     padding: 10px;
     border-radius: 8px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600; /* Increased weight */
 }
 .view-btn.active {
     background-color: var(--accent-color);
@@ -83,11 +79,12 @@ header { display: flex; justify-content: space-between; align-items: center; mar
     color: var(--text-color);
     width: 100%;
     box-sizing: border-box;
+    font-family: 'Nunito Sans', sans-serif; /* Ensure inputs use the new font */
 }
 #diary-entry, .small-input { resize: none; overflow-y: hidden; }
 #diary-entry { min-height: 120px; margin-bottom: 25px; }
 .input-section { margin-bottom: 25px; }
-.input-section h3 { font-size: 1rem; font-weight: 500; margin: 0 0 15px; color: var(--secondary-text-color); }
+.input-section h3 { font-size: 1rem; font-weight: 600; margin: 0 0 15px; color: var(--secondary-text-color); }
 .small-input { margin-bottom: 10px; }
 .small-input:last-child { margin-bottom: 0; }
 .collapsible-header {
@@ -100,7 +97,7 @@ header { display: flex; justify-content: space-between; align-items: center; mar
 #checklist-container, #tracker-stats { padding-top: 20px; }
 .habit-item { display: block; margin-bottom: 12px; font-size: 1rem; }
 
-/* --- NEW: Calendar Styles --- */
+/* --- Calendar Styles --- */
 .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .calendar-header h2 { margin: 0; }
 .calendar-header button { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
@@ -109,26 +106,24 @@ header { display: flex; justify-content: space-between; align-items: center; mar
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
 }
-.calendar-grid-header { font-weight: 600; text-align: center; color: var(--secondary-text-color); margin-bottom: 10px; }
+.calendar-grid-header { font-weight: 700; text-align: center; color: var(--secondary-text-color); margin-bottom: 10px; }
 .calendar-day {
-    aspect-ratio: 1 / 1; /* Make cells square */
+    aspect-ratio: 1 / 1;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 500;
+    font-weight: 600; /* Bolder date numbers */
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     background-color: var(--level-0); /* Default empty day color */
+    position: relative; /* Needed for more complex styling if ever required */
 }
 .calendar-day.not-current-month { color: var(--secondary-text-color); opacity: 0.5; }
 .calendar-day:hover { transform: scale(1.1); box-shadow: 0 0 10px rgba(0,0,0,0.2); z-index: 10; }
-/* Heatmap coloring classes */
-.calendar-day.level-1 { background-color: var(--level-1); }
-.calendar-day.level-2 { background-color: var(--level-2); color: white; }
-.calendar-day.level-3 { background-color: var(--level-3); color: white; }
-.calendar-day.level-4 { background-color: var(--level-4); color: white; }
+
+/* --- REMOVED: .level-1 to .level-4 classes are no longer used for calendar day colors --- */
 
 /* Other styles */
 .theme-switch-wrapper, #access-denied-message { /* ... unchanged ... */ }
