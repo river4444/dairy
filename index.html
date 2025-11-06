@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Diary & Habit Tracker</title>
+    <!-- NEW: Importing the 'Inter' font for better readability -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     <header>
-
+        <h1>My Diary & Tracker</h1>
         <div class="theme-switch-wrapper">
             <label class="theme-switch" for="theme-toggle">
                 <input type="checkbox" id="theme-toggle" />
@@ -16,53 +20,59 @@
             </label>
         </div>
     </header>
-    <main id="app-container" class="hidden">
+
+    <!-- NEW: View Switch Buttons -->
+    <div id="view-switcher">
+        <button id="daily-view-btn" class="view-btn active">Daily Entry</button>
+        <button id="calendar-view-btn" class="view-btn">Calendar View</button>
+    </div>
+
+    <!-- The main app container for the daily entry view -->
+    <main id="app-container">
         <div class="controls">
             <label for="diary-date">Select a date:</label>
             <input type="date" id="diary-date">
         </div>
-
         <textarea id="diary-entry" placeholder="Write your thoughts for the day..."></textarea>
-        
         <div class="input-section">
             <h3>Top 3 Priorities</h3>
-            <!-- UPDATED from <input> to <textarea> -->
             <textarea id="priority-1" class="small-input" placeholder="Priority #1" rows="1"></textarea>
             <textarea id="priority-2" class="small-input" placeholder="Priority #2" rows="1"></textarea>
             <textarea id="priority-3" class="small-input" placeholder="Priority #3" rows="1"></textarea>
         </div>
-
         <div class="input-section">
             <h3>3 Gratitude Items</h3>
-            <!-- UPDATED from <input> to <textarea> -->
             <textarea id="gratitude-1" class="small-input" placeholder="I am grateful for..." rows="1"></textarea>
             <textarea id="gratitude-2" class="small-input" placeholder="I am grateful for..." rows="1"></textarea>
             <textarea id="gratitude-3" class="small-input" placeholder="I am grateful for..." rows="1"></textarea>
         </div>
-
         <div id="checklist-section">
-            <button class="collapsible-header">
-                <h2>Daily Habits</h2>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="collapsible-content">
-                <div id="checklist-container"></div>
-            </div>
+            <button class="collapsible-header"><h2>Daily Habits</h2><span class="arrow">▼</span></button>
+            <div class="collapsible-content"><div id="checklist-container"></div></div>
         </div>
-        
         <div id="habit-tracker-section">
-            <button class="collapsible-header">
-                <h2>Last 30 Days Stats</h2>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="collapsible-content">
-                <div id="tracker-stats">Loading stats...</div>
-            </div>
+            <button class="collapsible-header"><h2>Last 30 Days Stats</h2><span class="arrow">▼</span></button>
+            <div class="collapsible-content"><div id="tracker-stats"></div></div>
         </div>
     </main>
 
-    <div id="access-denied-message">
+    <!-- NEW: Calendar View Container (hidden by default) -->
+    <div id="calendar-container" class="hidden">
+        <div class="calendar-header">
+            <button id="prev-month-btn">◀</button>
+            <h2 id="month-year-label"></h2>
+            <button id="next-month-btn">▶</button>
+        </div>
+        <div class="calendar-grid-header">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        </div>
+        <div id="calendar-grid">
+            <!-- Calendar days will be generated here -->
+        </div>
+    </div>
 
+    <div id="access-denied-message">
+        <p>Please use your master URL to access the diary.</p>
     </div>
 
     <script type="module" src="./app.js"></script>
