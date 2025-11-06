@@ -48,15 +48,15 @@ function initDom(){
   dom.trackerStats = $('tracker-stats');
   dom.miniStats = $('mini-stats');
 
-  dom.tabDaily = $('tab-daily'); dom.tabCalendar = $('tab-calendar'); dom.tabStats = $('tab-stats');
+  dom.tabDaily = $('tab-daily'); dom.tabCalendar = $('tab-calendar'); 
   dom.calendarPane = $('calendar-pane'); dom.calendarGrid = $('calendar-grid'); dom.monthYearLabel = $('month-year-label');
-  dom.statsPane = $('stats-pane');
+  // REMOVED: stats pane reference
   dom.prevMonthBtn = $('prev-month-btn'); dom.nextMonthBtn = $('next-month-btn');
   dom.optionalSections = document.querySelectorAll('.optional');
   
   dom.mbDaily = $('mb-daily');
   dom.mbCalendar = $('mb-calendar');
-  dom.mbStats = $('mb-stats');
+  // REMOVED: mobile stats reference
 }
 
 // ---------- Helpers ----------
@@ -135,7 +135,6 @@ async function loadEntryFromFirestore(dateStr) {
   return null;
 }
 
-// FIX: New function to automatically check habits based on content
 function checkAutoHabits(entryData) {
     if (!entryData) return;
     entryData.habits = entryData.habits || {};
@@ -164,7 +163,7 @@ async function loadEntry(dateStr) {
     renderList('priorities-list', data.priorities || []);
     renderList('gratitude-list', data.gratitude || []);
     
-    checkAutoHabits(data); // Apply auto-habit logic before rendering
+    checkAutoHabits(data); 
     renderHabitRibbon(data.habits || {});
 
     if ($('deep-work-log')) $('deep-work-log').value = data.deepWork || '';
@@ -184,7 +183,7 @@ function renderList(containerId, items = []) {
   const wrap = document.getElementById(containerId);
   if(!wrap) return;
   wrap.innerHTML = '';
-  const count = Math.max(3, items.length); // Always render at least 3 boxes
+  const count = Math.max(3, items.length);
   for(let i=0;i<count;i++){
     const v = items[i] || '';
     const txt = document.createElement('textarea');
@@ -225,13 +224,12 @@ function triggerAutosave(){
     const dateStr = dom.dateInput.value;
     const entryData = gatherEntry();
     
-    checkAutoHabits(entryData); // Apply auto-habit logic before saving
+    checkAutoHabits(entryData); 
     
     saveLocalDraft(dateStr, entryData);
     try {
       await saveEntryToFirestore(dateStr, entryData);
       setSaved(true);
-      // Re-render habits to reflect any automatic changes
       renderHabitRibbon(entryData.habits); 
     } catch(err){
       console.error('save failed', err);
@@ -325,16 +323,15 @@ function addListRow(containerId, value='') {
 function showPane(name) {
   dom.tabDaily.classList.toggle('active', name==='daily');
   dom.tabCalendar.classList.toggle('active', name==='calendar');
-  dom.tabStats.classList.toggle('active', name==='stats');
+  // REMOVED: stats logic
 
   dom.calendarPane.classList.toggle('hidden', name!=='calendar');
-  dom.statsPane.classList.toggle('hidden', name!=='stats');
-  document.querySelector('#left-col').classList.toggle('hidden', name==='calendar' || name==='stats');
+  document.querySelector('#left-col').classList.toggle('hidden', name==='calendar');
 
   if (dom.mbDaily) {
       dom.mbDaily.classList.toggle('active', name === 'daily');
       dom.mbCalendar.classList.toggle('active', name === 'calendar');
-      dom.mbStats.classList.toggle('active', name === 'stats');
+      // REMOVED: mobile stats logic
   }
 }
 
@@ -370,14 +367,14 @@ function bindUI() {
 
   dom.tabDaily.addEventListener('click', ()=> showPane('daily'));
   dom.tabCalendar.addEventListener('click', ()=> { showPane('calendar'); renderCalendar(); });
-  dom.tabStats.addEventListener('click', ()=> { showPane('stats'); updateMonthlyStatsFromUI(); });
+  // REMOVED: stats tab listener
 
   dom.prevMonthBtn.addEventListener('click', ()=> { currentCalendarDate.setMonth(currentCalendarDate.getMonth()-1); renderCalendar(); });
   dom.nextMonthBtn.addEventListener('click', ()=> { currentCalendarDate.setMonth(currentCalendarDate.getMonth()+1); renderCalendar(); });
 
   dom.mbDaily.addEventListener('click', () => showPane('daily'));
   dom.mbCalendar.addEventListener('click', () => { showPane('calendar'); renderCalendar(); });
-  dom.mbStats.addEventListener('click', () => { showPane('stats'); updateMonthlyStatsFromUI(); });
+  // REMOVED: mobile stats listener
 
   setSaved(false);
   renderHabitRibbon({});
@@ -413,41 +410,38 @@ async function updateMonthlyStatsFromUI() {
     }
   });
 
-  const tracker = $('tracker-stats');
   const mini = $('mini-stats');
-  if(tracker) tracker.innerHTML = '';
   if(mini) mini.innerHTML = '';
 
   HABITS.forEach(h => {
     const count = counts[h.id];
-    const pct = Math.round((count / daysSoFar) * 100);
-    
-    if(tracker) tracker.innerHTML += `
-      <div class="tracker-item">
-        <div class="tracker-label" style="display:flex;justify-content:space-between">
-          <span>${h.text}</span>
-          <span style="color:var(--muted)">${count}/${daysSoFar}</span>
-        </div>
-        <div class="tracker-bar-container">
-          <div class="tracker-bar" style="width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent-2));padding-right:8px;color:#fff;font-weight:700;height:18px;border-radius:10px;display:flex;align-items:center;justify-content:flex-end">${pct}%</div>
-        </div>
-      </div>`;
-      
     if(mini) mini.innerHTML += `<div class="stat-row"><div>${h.shortLabel}</div><div style="color:var(--muted)">${count}/${daysSoFar}</div></div>`;
   });
 }
 
 // ---------- Theme toggle persistence ----------
+// FIX: Rewritten to work with a button instead of a checkbox.
 function setupTheme() {
   const toggle = $('theme-toggle');
-  const saved = localStorage.getItem('theme');
-  if(saved === 'dark') {
-    document.documentElement.setAttribute('data-theme','dark');
-    toggle.checked = true;
-  }
-  toggle.addEventListener('change', ()=>{
-    if(toggle.checked){ document.documentElement.setAttribute('data-theme','dark'); localStorage.setItem('theme','dark'); }
-    else { document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('theme','light'); }
+  
+  const applyTheme = (theme) => {
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      toggle.textContent = '☀️';
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+      toggle.textContent = '🌙';
+    }
+  };
+
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  applyTheme(savedTheme);
+
+  toggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', newTheme);
+    applyTheme(newTheme);
   });
 }
 
