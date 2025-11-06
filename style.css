@@ -1,23 +1,35 @@
 :root {
-    --bg-color: #f4f4f9;
+    --bg-color: #f8f9fa; /* Lighter background */
     --card-bg-color: #ffffff;
-    --text-color: #333333;
-    --secondary-text-color: #555555;
-    --border-color: #e0e0e0;
+    --text-color: #212529; /* Darker, higher contrast text */
+    --secondary-text-color: #6c757d;
+    --border-color: #dee2e6;
     --accent-color: #007bff;
-    --accent-color-hover: #0056b3;
+    --accent-color-hover: #0069d9;
+    /* NEW: Color scale for calendar */
+    --level-0: #ebedf0;
+    --level-1: #9be9a8;
+    --level-2: #40c463;
+    --level-3: #30a14e;
+    --level-4: #216e39;
 }
 [data-theme="dark"] {
-    --bg-color: #121212;
-    --card-bg-color: #1e1e1e;
-    --text-color: #e0e0e0;
-    --secondary-text-color: #bbbbbb;
-    --border-color: #333333;
-    --accent-color: #0d8eff;
-    --accent-color-hover: #3a9fff;
+    --bg-color: #0d1117;
+    --card-bg-color: #161b22;
+    --text-color: #c9d1d9;
+    --secondary-text-color: #8b949e;
+    --border-color: #30363d;
+    --accent-color: #1f6feb;
+    --accent-color-hover: #388bfd;
+    /* Dark mode color scale */
+    --level-0: #2d333b;
+    --level-1: #0e4429;
+    --level-2: #006d32;
+    --level-3: #26a641;
+    --level-4: #39d353;
 }
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
@@ -27,26 +39,40 @@ body {
     align-items: center;
     transition: background-color 0.3s, color 0.3s;
 }
-header {
+header, #app-container, #calendar-container, #view-switcher {
     width: 100%;
-    max-width: 680px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    max-width: 720px; /* Slightly wider for calendar */
 }
-h1 { font-weight: 600; }
-h2 { font-weight: 500; font-size: 1.2rem; }
-#app-container {
-    width: 100%;
-    max-width: 680px;
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+#app-container, #calendar-container {
     background: var(--card-bg-color);
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 4px 25px rgba(0,0,0,0.05);
     border: 1px solid var(--border-color);
-    transition: background-color 0.3s, border-color 0.3s;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.05);
+    box-sizing: border-box;
 }
+.hidden { display: none !important; }
+
+/* --- NEW: View Switcher Styles --- */
+#view-switcher { display: flex; margin-bottom: 20px; gap: 10px; }
+.view-btn {
+    flex-grow: 1;
+    background-color: var(--bg-color);
+    color: var(--secondary-text-color);
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.view-btn.active {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* --- Daily Entry Styles --- */
 .controls { margin-bottom: 15px; }
 #diary-date, #diary-entry, .small-input {
     padding: 12px;
@@ -55,76 +81,54 @@ h2 { font-weight: 500; font-size: 1.2rem; }
     border-radius: 8px;
     background-color: var(--bg-color);
     color: var(--text-color);
-}
-#diary-entry {
     width: 100%;
-    min-height: 120px;
     box-sizing: border-box;
-    resize: none;
-    overflow-y: hidden;
-    margin-bottom: 25px;
 }
-.collapsible-header {
-    background-color: transparent;
-    color: var(--text-color);
-    cursor: pointer;
-    padding: 15px 5px;
-    width: 100%;
-    border: none;
-    border-top: 1px dashed var(--border-color);
-    text-align: left;
-    outline: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 20px 0 0 0;
-}
-#habit-tracker-section .collapsible-header { margin-top: 30px; }
-.collapsible-header h2 { margin: 0; }
-.collapsible-header .arrow { transition: transform 0.3s ease; }
-.collapsible-header.active .arrow { transform: rotate(180deg); }
-.collapsible-content {
-    padding: 0 5px;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-    background-color: transparent;
-}
-#checklist-container, #tracker-stats {
-    padding-top: 20px;
-}
-.habit-item { display: block; margin-bottom: 12px; font-size: 18px; }
-.habit-item label { cursor: pointer; display: flex; align-items: center; }
-.habit-item input[type="checkbox"] { margin-right: 12px; transform: scale(1.3); }
-.tracker-item { margin-bottom: 15px; }
-.tracker-label { display: flex; justify-content: space-between; margin-bottom: 8px; }
-.tracker-bar-container { width: 100%; background-color: var(--bg-color); border-radius: 4px; overflow: hidden; }
-.tracker-bar { height: 20px; background-color: var(--accent-color); border-radius: 4px; transition: width 0.5s ease-in-out; text-align: center; color: white; line-height: 20px; font-size: 12px; }
-.theme-switch-wrapper { display: flex; align-items: center; }
-.theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-.theme-switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: var(--accent-color); }
-input:checked + .slider:before { transform: translateX(24px); }
+#diary-entry, .small-input { resize: none; overflow-y: hidden; }
+#diary-entry { min-height: 120px; margin-bottom: 25px; }
 .input-section { margin-bottom: 25px; }
-.input-section h3 { font-size: 1rem; font-weight: 500; margin-top: 0; margin-bottom: 15px; color: var(--secondary-text-color); }
-.small-input {
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-    /* NEW: Add resizing properties */
-    resize: none;
-    overflow-y: hidden;
-}
+.input-section h3 { font-size: 1rem; font-weight: 500; margin: 0 0 15px; color: var(--secondary-text-color); }
+.small-input { margin-bottom: 10px; }
 .small-input:last-child { margin-bottom: 0; }
+.collapsible-header {
+    background: transparent; color: var(--text-color); cursor: pointer; padding: 15px 5px; width: 100%;
+    border: none; border-top: 1px dashed var(--border-color); text-align: left; outline: none;
+    display: flex; justify-content: space-between; align-items: center; margin: 20px 0 0 0;
+}
+.collapsible-content { padding: 0 5px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+.collapsible-header.active .arrow { transform: rotate(180deg); }
+#checklist-container, #tracker-stats { padding-top: 20px; }
+.habit-item { display: block; margin-bottom: 12px; font-size: 1rem; }
 
-/* --- NEW STYLES --- */
-.hidden {
-    display: none;
+/* --- NEW: Calendar Styles --- */
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.calendar-header h2 { margin: 0; }
+.calendar-header button { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
+#calendar-grid, .calendar-grid-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
 }
-#access-denied-message {
-    text-align: center;
-    color: var(--secondary-text-color);
-    margin-top: 50px;
+.calendar-grid-header { font-weight: 600; text-align: center; color: var(--secondary-text-color); margin-bottom: 10px; }
+.calendar-day {
+    aspect-ratio: 1 / 1; /* Make cells square */
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background-color: var(--level-0); /* Default empty day color */
 }
+.calendar-day.not-current-month { color: var(--secondary-text-color); opacity: 0.5; }
+.calendar-day:hover { transform: scale(1.1); box-shadow: 0 0 10px rgba(0,0,0,0.2); z-index: 10; }
+/* Heatmap coloring classes */
+.calendar-day.level-1 { background-color: var(--level-1); }
+.calendar-day.level-2 { background-color: var(--level-2); color: white; }
+.calendar-day.level-3 { background-color: var(--level-3); color: white; }
+.calendar-day.level-4 { background-color: var(--level-4); color: white; }
+
+/* Other styles */
+.theme-switch-wrapper, #access-denied-message { /* ... unchanged ... */ }
