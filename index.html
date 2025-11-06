@@ -1,89 +1,151 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Diary & Habit Tracker</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Diary & Habit Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <header>
-        <h1>My Diary & Tracker</h1>
-        <div class="theme-switch-wrapper">
-            <label class="theme-switch" for="theme-toggle">
-                <input type="checkbox" id="theme-toggle" />
-                <div class="slider round"></div>
-            </label>
-        </div>
-    </header>
-
-    <div id="view-switcher" class="hidden">
-        <button id="daily-view-btn" class="view-btn active">Daily Entry</button>
-        <button id="calendar-view-btn" class="view-btn">Calendar View</button>
+  <header class="site-header">
+    <div class="header-left">
+      <h1 class="brand">My Diary & Tracker</h1>
+      <div id="today-summary" class="today-summary" aria-hidden="true"></div>
     </div>
 
-    <main id="app-container">
-        <div class="controls">
-            <label for="diary-date">Select a date:</label>
-            <input type="date" id="diary-date">
-        </div>
-        <textarea id="diary-entry" placeholder="Write your thoughts for the day..."></textarea>
-        
-        <div class="input-section">
-            <h3>What I Ate Today</h3>
-            <textarea id="food-log-entry" placeholder="Breakfast: ..., Lunch: ..., Dinner: ..."></textarea>
-        </div>
-
-        <div class="input-section">
-            <h3>Top 3 Priorities</h3>
-            <textarea id="priority-1" class="small-input" placeholder="Priority #1" rows="1"></textarea>
-            <textarea id="priority-2" class="small-input" placeholder="Priority #2" rows="1"></textarea>
-            <textarea id="priority-3" class="small-input" placeholder="Priority #3" rows="1"></textarea>
-        </div>
-
-        <!-- NEW: Daily Wins & Progress Section -->
-        <div class="input-section">
-            <h3>Daily Wins & Progress</h3>
-            <textarea id="deep-work-log" class="small-input" placeholder="Deep Work Accomplishment..." rows="1"></textarea>
-            <textarea id="skill-practice-log" class="small-input" placeholder="Skill Practice Notes..." rows="1"></textarea>
-        </div>
-
-        <div class="input-section">
-            <h3>3 Gratitude Items</h3>
-            <textarea id="gratitude-1" class="small-input" placeholder="I am grateful for..." rows="1"></textarea>
-            <textarea id="gratitude-2" class="small-input" placeholder="I am grateful for..." rows="1"></textarea>
-            <textarea id="gratitude-3" class="small-input" placeholder="I am grateful for..." rows="1"></textarea>
-        </div>
-        <div id="checklist-section">
-            <button class="collapsible-header"><h2>Daily Habits</h2><span class="arrow">▼</span></button>
-            <div class="collapsible-content"><div id="checklist-container"></div></div>
-        </div>
-        <div id="habit-tracker-section">
-            <button class="collapsible-header"><h2>Stats for <span id="monthly-stats-month-label"></span></h2><span class="arrow">▼</span></button>
-            <div class="collapsible-content"><div id="tracker-stats"></div></div>
-        </div>
-    </main>
-
-    <!-- Calendar View Container -->
-    <div id="calendar-container" class="hidden">
-        <div class="calendar-header">
-            <button id="prev-month-btn">◀</button>
-            <h2 id="month-year-label"></h2>
-            <button id="next-month-btn">▶</button>
-        </div>
-        <div class="calendar-grid-header">
-            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-        </div>
-        <div id="calendar-grid"></div>
+    <div class="header-right">
+      <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="theme-toggle">
+          <input type="checkbox" id="theme-toggle" />
+          <div class="slider round"></div>
+        </label>
+      </div>
+      <nav class="top-nav">
+        <button id="tab-daily" class="tab-btn active">Daily</button>
+        <button id="tab-calendar" class="tab-btn">Calendar</button>
+        <button id="tab-stats" class="tab-btn">Stats</button>
+      </nav>
     </div>
+  </header>
 
-    <div id="access-denied-message">
-        <p>Please use your master URL to access the diary.</p>
+  <main id="app-root">
+    <!-- Two-column desktop layout. On small screens it stacks -->
+    <section id="left-col" class="pane left-pane">
+      <div class="card" id="daily-card">
+        <div class="card-header">
+          <div class="date-and-actions">
+            <input type="date" id="diary-date" class="date-input" />
+            <div id="save-indicator" class="save-indicator">Saved</div>
+          </div>
+          <div class="progress-wrap">
+            <div id="progress-label">Today — 0%</div>
+            <div class="progress-bar-outer"><div id="progress-bar" class="progress-bar-inner"></div></div>
+          </div>
+        </div>
+
+        <textarea id="main-journal" class="main-journal" placeholder="Start writing..."></textarea>
+
+        <div class="flow-actions">
+          <button id="expand-wins" class="mini-btn">Add Wins</button>
+          <button id="expand-food" class="mini-btn">Add Food</button>
+          <button id="expand-priorities" class="mini-btn">Add Priorities</button>
+          <button id="expand-gratitude" class="mini-btn">Add Gratitude</button>
+        </div>
+
+        <!-- Collapsible optional sections (start collapsed) -->
+        <div class="optional-sections">
+          <div class="optional" data-key="wins">
+            <button class="optional-toggle">Wins <span class="chev">▾</span></button>
+            <div class="optional-body hidden">
+              <textarea id="deep-work-log" class="small-input" rows="2" placeholder="Daily wins / deep-work..."></textarea>
+            </div>
+          </div>
+
+          <div class="optional" data-key="food">
+            <button class="optional-toggle">Food <span class="chev">▾</span></button>
+            <div class="optional-body hidden">
+              <textarea id="food-log-entry" class="small-input" rows="2" placeholder="Breakfast: ..."></textarea>
+            </div>
+          </div>
+
+          <div class="optional" data-key="priorities">
+            <button class="optional-toggle">Priorities <span class="chev">▾</span></button>
+            <div class="optional-body hidden">
+              <!-- Simple dynamic priorities list -->
+              <div id="priorities-list" class="priorities-list"></div>
+              <button id="add-priority" class="link-btn">+ Add priority</button>
+            </div>
+          </div>
+
+          <div class="optional" data-key="gratitude">
+            <button class="optional-toggle">Gratitude <span class="chev">▾</span></button>
+            <div class="optional-body hidden">
+              <div id="gratitude-list" class="priorities-list"></div>
+              <button id="add-gratitude" class="link-btn">+ Add gratitude</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mobile-bottom-nav" class="mobile-bottom nav-hidden">
+        <button id="mb-daily" class="mb-btn active">Daily</button>
+        <button id="mb-calendar" class="mb-btn">Calendar</button>
+        <button id="mb-stats" class="mb-btn">Stats</button>
+      </div>
+    </section>
+
+    <aside id="right-col" class="pane right-pane">
+      <div class="card compact-card">
+        <h3 class="card-title">Habits</h3>
+        <div id="habit-ribbon" class="habit-ribbon"></div>
+        <div class="ribbon-actions">
+          <button id="open-checklist" class="link-btn">Open checklist</button>
+          <button id="reset-habits" class="link-btn muted">Reset</button>
+        </div>
+      </div>
+
+      <div class="card compact-card" id="mini-stats-card">
+        <h3 class="card-title">This Month</h3>
+        <div id="mini-stats"></div>
+      </div>
+
+      <div class="card compact-card" id="quick-actions-card">
+        <h3 class="card-title">Quick</h3>
+        <button id="today-button" class="full-btn">Jump to Today</button>
+        <button id="view-calendar" class="full-btn outline">Open Calendar</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Calendar + Stats panes (show/hide by top tabs) -->
+  <div id="calendar-pane" class="overlay-pane hidden">
+    <div class="card large">
+      <div class="calendar-header">
+        <button id="prev-month-btn">◀</button>
+        <h2 id="month-year-label"></h2>
+        <button id="next-month-btn">▶</button>
+      </div>
+      <div class="calendar-grid-header">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+      <div id="calendar-grid" class="calendar-grid"></div>
     </div>
+  </div>
 
-    <script type="module" src="./app.js"></script>
+  <div id="stats-pane" class="overlay-pane hidden">
+    <div class="card large">
+      <h2>Monthly Stats</h2>
+      <div id="tracker-stats"></div>
+    </div>
+  </div>
+
+  <div id="access-denied-message" class="access-denied hidden">
+      <p>Please use your master URL to access the diary.</p>
+  </div>
+
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
