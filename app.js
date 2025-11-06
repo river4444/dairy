@@ -10,13 +10,26 @@ const firebaseConfig = {
     messagingSenderId: "50167451169",
     appId: "1:50167451169:web:5ea9cffde6db860ff7dd60"
 };
+
+// MODIFIED: Reorganized and expanded the habits list for better flow
 const HABITS = [
+    // --- Health & Body ---
     { id: 'sunlight', text: 'Got morning sunlight' },
     { id: 'exercise', text: 'Exercised for 20+ minutes' },
-    { id: 'noPhoneMorning', text: 'No Phone for the First Hour' },
+    { id: 'mobility', text: '5+ minutes of stretching/mobility' },
+    { id: 'sleepConsistency', text: 'Consistent Wake-up/Bedtime (±30m)' },
+    // --- Mind & Growth ---
     { id: 'mindfulness', text: '5+ Minutes of Mindfulness' },
+    { id: 'reading', text: 'Read for 15+ minutes' },
+    { id: 'skillDevelopment', text: 'Practiced a skill for 20+ minutes' },
+    { id: 'noPhoneMorning', text: 'No Phone for the First Hour' },
+    // --- Productivity & Planning ---
+    { id: 'deepWork', text: 'Completed one 90-min Deep Work session' },
+    { id: 'setPriorities', text: 'Set Top 1-3 Priorities' },
+    { id: 'dailyReview', text: 'Completed a daily review/shutdown' },
+    { id: 'planNextDay', text: 'Planned the next day' },
+    // --- Evening Routine ---
     { id: 'gratitude', text: 'Wrote 3 Gratitude Items' },
-    { id: 'priorities', text: 'Set Top 1-3 Priorities' },
     { id: 'tidyUp', text: '10-Minute Evening Tidy-Up' },
     { id: 'noPhoneBed', text: 'No phone 1 hour before bed' }
 ];
@@ -32,20 +45,20 @@ const main = () => {
     const viewSwitcher = document.getElementById('view-switcher');
 
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('master') !== 'true') {
-        return; // Stop execution if not master user
-    }
+    if (urlParams.get('master') !== 'true') return;
     viewSwitcher.classList.remove('hidden');
     accessDeniedMessage.classList.add('hidden');
     
     // --- DOM ELEMENTS ---
     const dateInput = document.getElementById('diary-date');
     const entryTextarea = document.getElementById('diary-entry');
-    const foodLogTextarea = document.getElementById('food-log-entry'); // NEW
+    const foodLogTextarea = document.getElementById('food-log-entry');
+    const deepWorkTextarea = document.getElementById('deep-work-log'); // NEW
+    const skillPracticeTextarea = document.getElementById('skill-practice-log'); // NEW
     const checklistContainer = document.getElementById('checklist-container');
     const themeToggle = document.getElementById('theme-toggle');
     const trackerStatsContainer = document.getElementById('tracker-stats');
-    const monthlyStatsMonthLabel = document.getElementById('monthly-stats-month-label'); // NEW
+    const monthlyStatsMonthLabel = document.getElementById('monthly-stats-month-label');
     const priorityInputs = document.querySelectorAll('#priority-1, #priority-2, #priority-3');
     const gratitudeInputs = document.querySelectorAll('#gratitude-1, #gratitude-2, #gratitude-3');
     const dailyViewBtn = document.getElementById('daily-view-btn');
@@ -140,21 +153,28 @@ const main = () => {
 
     const saveEntry = async () => {
         const dateStr = dateInput.value;
-        const content = entryTextarea.value;
-        const foodLog = foodLogTextarea.value; // NEW
         const habitsToSave = {};
         HABITS.forEach(habit => {
             const checkbox = document.getElementById(`habit-${habit.id}`);
             if (checkbox) habitsToSave[habit.id] = checkbox.checked;
         });
-        const prioritiesToSave = Array.from(priorityInputs).map(input => input.value);
-        const gratitudeToSave = Array.from(gratitudeInputs).map(input => input.value);
+
+        const entryData = {
+            content: entryTextarea.value,
+            foodLog: foodLogTextarea.value,
+            deepWork: deepWorkTextarea.value, // NEW
+            skillPractice: skillPracticeTextarea.value, // NEW
+            habits: habitsToSave,
+            priorities: Array.from(priorityInputs).map(input => input.value),
+            gratitude: Array.from(gratitudeInputs).map(input => input.value)
+        };
+        
         const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
         try {
-            await setDoc(entryRef, { content, foodLog, habits: habitsToSave, priorities: prioritiesToSave, gratitude: gratitudeToSave }); // ADDED foodLog
+            await setDoc(entryRef, entryData);
             console.log(`Autosaved for ${dateStr}`);
             const [year, month] = dateStr.split('-').map(Number);
-            updateMonthlyStats(year, month - 1); // Refresh stats on save
+            updateMonthlyStats(year, month - 1);
         } catch (error) {
             console.error("Error autosaving entry: ", error);
         }
@@ -162,18 +182,23 @@ const main = () => {
 
     const loadEntryForDate = async (dateStr) => {
         if (!dateStr) return;
+        // Clear all fields
         entryTextarea.value = 'Loading...';
-        foodLogTextarea.value = ''; // NEW
+        foodLogTextarea.value = '';
+        deepWorkTextarea.value = ''; // NEW
+        skillPracticeTextarea.value = ''; // NEW
         priorityInputs.forEach(input => input.value = '');
         gratitudeInputs.forEach(input => input.value = '');
-        
+
         const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
         try {
             const docSnap = await getDoc(entryRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 entryTextarea.value = data.content || '';
-                foodLogTextarea.value = data.foodLog || ''; // NEW
+                foodLogTextarea.value = data.foodLog || '';
+                deepWorkTextarea.value = data.deepWork || ''; // NEW
+                skillPracticeTextarea.value = data.skillPractice || ''; // NEW
                 const habitsData = data.habits || {};
                 HABITS.forEach(habit => {
                     const checkbox = document.getElementById(`habit-${habit.id}`);
@@ -184,10 +209,8 @@ const main = () => {
                 const gratitudeData = data.gratitude || [];
                 gratitudeInputs.forEach((input, index) => input.value = gratitudeData[index] || '');
             } else {
+                // If no data, ensure fields are empty
                 entryTextarea.value = '';
-                foodLogTextarea.value = ''; // NEW
-                priorityInputs.forEach(input => input.value = '');
-                gratitudeInputs.forEach(input => input.value = '');
                 HABITS.forEach(habit => {
                     const checkbox = document.getElementById(`habit-${habit.id}`);
                     if (checkbox) checkbox.checked = false;
@@ -201,7 +224,7 @@ const main = () => {
                 textarea.style.height = textarea.scrollHeight + 'px';
             });
             const [year, month] = dateStr.split('-').map(Number);
-            updateMonthlyStats(year, month - 1); // Update stats for the viewed month
+            updateMonthlyStats(year, month - 1);
         }
     };
 
@@ -222,7 +245,6 @@ const main = () => {
         return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
     };
 
-    // --- REWRITTEN: Stats function is now month-based ---
     const updateMonthlyStats = async (year, month) => {
         trackerStatsContainer.innerHTML = 'Calculating...';
         const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
@@ -314,22 +336,18 @@ const main = () => {
     setupThemeToggle();
     setupCollapsibles();
     setupAutoResizeTextareas();
-    loadEntryForDate(dateInput.value); // This will also trigger the initial stats update
+    loadEntryForDate(dateInput.value);
     
-    // Event Listeners
+    // --- Event Listeners ---
     dailyViewBtn.addEventListener('click', switchToDailyView);
     calendarViewBtn.addEventListener('click', switchToCalendarView);
-    prevMonthBtn.addEventListener('click', () => {
-        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-        renderCalendar();
-    });
-    nextMonthBtn.addEventListener('click', () => {
-        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-        renderCalendar();
-    });
+    prevMonthBtn.addEventListener('click', () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); });
+    nextMonthBtn.addEventListener('click', () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); });
     dateInput.addEventListener('change', () => loadEntryForDate(dateInput.value));
     entryTextarea.addEventListener('input', triggerAutosave);
-    foodLogTextarea.addEventListener('input', triggerAutosave); // NEW
+    foodLogTextarea.addEventListener('input', triggerAutosave);
+    deepWorkTextarea.addEventListener('input', triggerAutosave); // NEW
+    skillPracticeTextarea.addEventListener('input', triggerAutosave); // NEW
     priorityInputs.forEach(input => input.addEventListener('input', triggerAutosave));
     gratitudeInputs.forEach(input => input.addEventListener('input', triggerAutosave));
 };
