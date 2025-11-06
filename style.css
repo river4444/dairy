@@ -6,8 +6,9 @@
     --border-color: #dee2e6;
     --accent-color: #007bff;
     --accent-color-hover: #0069d9;
-    /* MODIFIED: Removed level colors, as JS now handles the fill */
-    --level-0: #ebedf0; /* Base color for empty calendar days */
+    --level-0: #ebedf0;
+    /* NEW: Gradient for progress bars */
+    --bar-gradient: linear-gradient(90deg, #007bff, #0056b3);
 }
 [data-theme="dark"] {
     --bg-color: #0d1117;
@@ -18,9 +19,9 @@
     --accent-color: #1f6feb;
     --accent-color-hover: #388bfd;
     --level-0: #2d333b;
+    --bar-gradient: linear-gradient(90deg, #1f6feb, #388bfd);
 }
 body {
-    /* MODIFIED: Font changed to Nunito Sans and base weight set for readability */
     font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     font-weight: 400;
     background-color: var(--bg-color);
@@ -37,9 +38,7 @@ header, #app-container, #calendar-container, #view-switcher {
     max-width: 720px;
 }
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-h1, h2, h3 {
-    font-weight: 700; /* Bolder headings for clarity */
-}
+h1, h2, h3 { font-weight: 700; }
 #app-container, #calendar-container {
     background: var(--card-bg-color);
     padding: 30px;
@@ -50,27 +49,14 @@ h1, h2, h3 {
 }
 .hidden { display: none !important; }
 
-/* --- View Switcher Styles --- */
+/* View Switcher */
 #view-switcher { display: flex; margin-bottom: 20px; gap: 10px; }
-.view-btn {
-    flex-grow: 1;
-    background-color: var(--bg-color);
-    color: var(--secondary-text-color);
-    border: 1px solid var(--border-color);
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600; /* Increased weight */
-}
-.view-btn.active {
-    background-color: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
-}
+.view-btn { flex-grow: 1; background-color: var(--bg-color); color: var(--secondary-text-color); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.view-btn.active { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
 
-/* --- Daily Entry Styles --- */
+/* Daily Entry Styles */
 .controls { margin-bottom: 15px; }
-#diary-date, #diary-entry, .small-input {
+#diary-date, textarea {
     padding: 12px;
     font-size: 16px;
     border: 1px solid var(--border-color);
@@ -79,33 +65,64 @@ h1, h2, h3 {
     color: var(--text-color);
     width: 100%;
     box-sizing: border-box;
-    font-family: 'Nunito Sans', sans-serif; /* Ensure inputs use the new font */
+    font-family: 'Nunito Sans', sans-serif;
 }
-#diary-entry, .small-input { resize: none; overflow-y: hidden; }
-#diary-entry { min-height: 120px; margin-bottom: 25px; }
+textarea { resize: none; overflow-y: hidden; }
+#diary-entry, #food-log-entry { margin-bottom: 25px; }
+#diary-entry { min-height: 120px; }
+#food-log-entry { min-height: 80px; } /* NEW: Style for food log */
 .input-section { margin-bottom: 25px; }
 .input-section h3 { font-size: 1rem; font-weight: 600; margin: 0 0 15px; color: var(--secondary-text-color); }
 .small-input { margin-bottom: 10px; }
-.small-input:last-child { margin-bottom: 0; }
-.collapsible-header {
-    background: transparent; color: var(--text-color); cursor: pointer; padding: 15px 5px; width: 100%;
-    border: none; border-top: 1px dashed var(--border-color); text-align: left; outline: none;
-    display: flex; justify-content: space-between; align-items: center; margin: 20px 0 0 0;
-}
+.collapsible-header { background: transparent; color: var(--text-color); cursor: pointer; padding: 15px 5px; width: 100%; border: none; border-top: 1px dashed var(--border-color); text-align: left; outline: none; display: flex; justify-content: space-between; align-items: center; margin: 20px 0 0 0; }
 .collapsible-content { padding: 0 5px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
 .collapsible-header.active .arrow { transform: rotate(180deg); }
 #checklist-container, #tracker-stats { padding-top: 20px; }
 .habit-item { display: block; margin-bottom: 12px; font-size: 1rem; }
 
-/* --- Calendar Styles --- */
+/* --- REDESIGNED: Monthly Stats Visuals --- */
+.tracker-item { margin-bottom: 18px; }
+.tracker-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+.tracker-label span:first-child {
+    font-weight: 600;
+}
+.tracker-label span:last-child {
+    font-size: 0.85rem;
+    color: var(--secondary-text-color);
+}
+.tracker-bar-container {
+    width: 100%;
+    height: 20px;
+    background-color: var(--level-0);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.tracker-bar {
+    height: 100%;
+    background: var(--bar-gradient);
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    box-sizing: border-box;
+    transition: width 0.5s ease-in-out;
+}
+
+/* Calendar Styles */
 .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .calendar-header h2 { margin: 0; }
 .calendar-header button { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
-#calendar-grid, .calendar-grid-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-}
+#calendar-grid, .calendar-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
 .calendar-grid-header { font-weight: 700; text-align: center; color: var(--secondary-text-color); margin-bottom: 10px; }
 .calendar-day {
     aspect-ratio: 1 / 1;
@@ -114,16 +131,25 @@ h1, h2, h3 {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600; /* Bolder date numbers */
+    font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    background-color: var(--level-0); /* Default empty day color */
-    position: relative; /* Needed for more complex styling if ever required */
+    transition: all 0.2s;
+    background-color: var(--level-0);
+    position: relative;
 }
 .calendar-day.not-current-month { color: var(--secondary-text-color); opacity: 0.5; }
 .calendar-day:hover { transform: scale(1.1); box-shadow: 0 0 10px rgba(0,0,0,0.2); z-index: 10; }
 
-/* --- REMOVED: .level-1 to .level-4 classes are no longer used for calendar day colors --- */
+/* Theme Switcher */
+.theme-switch-wrapper { display: flex; align-items: center; }
+.theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+.theme-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: var(--accent-color); }
+input:checked + .slider:before { transform: translateX(24px); }
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
 
-/* Other styles */
-.theme-switch-wrapper, #access-denied-message { /* ... unchanged ... */ }
+/* Access Denied */
+#access-denied-message { text-align: center; color: var(--secondary-text-color); }
