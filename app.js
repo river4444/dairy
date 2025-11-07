@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const siteHeader = document.querySelector('.site-header');
 
     const attemptLogin = () => {
-        if (passwordInput.value === 'swag2') {
+        if (passwordInput.value === 'Swag2') {
             loginOverlay.style.display = 'none';
             appRoot.classList.remove('hidden');
             siteHeader.classList.remove('hidden');
