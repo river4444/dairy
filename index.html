@@ -10,8 +10,21 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <!-- FIX: Header moved back to the top of the body for correct layout -->
+  <header class="site-header">
+    <div class="header-left">
+      <h1 class="brand">My Diary & Tracker</h1>
+    </div>
 
-  <!-- FIX: Added login overlay -->
+    <div class="header-right">
+      <button id="theme-toggle" class="theme-btn">🌙</button>
+      <nav class="top-nav">
+        <button id="tab-daily" class="tab-btn active">Daily</button>
+        <button id="tab-calendar" class="tab-btn">Calendar</button>
+      </nav>
+    </div>
+  </header>
+
   <div id="login-overlay">
     <div id="login-box" class="card">
       <h2>Enter Access Code</h2>
@@ -20,7 +33,6 @@
     </div>
   </div>
 
-  <!-- FIX: App is now hidden by default -->
   <main id="app-root" class="hidden">
     <section id="left-col" class="pane left-pane">
       <div class="card" id="daily-card">
@@ -35,7 +47,6 @@
 
         <div class="optional-sections">
           <div class="optional" data-key="priorities">
-            <!-- REMOVED: Chevron span -->
             <button class="optional-toggle">Priorities</button>
             <div class="optional-body">
               <div id="priorities-list" class="priorities-list"></div>
@@ -79,7 +90,6 @@
         <div id="habit-ribbon" class="habit-ribbon"></div>
       </div>
 
-      <!-- FIX: Restructured "This Month" to be a collapsible section -->
       <div class="card compact-card optional" data-key="monthly-stats">
         <button class="optional-toggle">This Month</button>
         <div id="mini-stats-body" class="optional-body hidden">
@@ -106,21 +116,7 @@
   <div id="access-denied-message" class="access-denied hidden">
       <p>Please use your master URL to access the diary.</p>
   </div>
-
-  <header class="site-header">
-    <div class="header-left">
-      <h1 class="brand">My Diary & Tracker</h1>
-    </div>
-
-    <div class="header-right">
-      <button id="theme-toggle" class="theme-btn">🌙</button>
-      <nav class="top-nav">
-        <button id="tab-daily" class="tab-btn active">Daily</button>
-        <button id="tab-calendar" class="tab-btn">Calendar</button>
-      </nav>
-    </div>
-  </header>
-
+  
   <script type="module" src="./app.js"></script>
 </body>
 </html>
