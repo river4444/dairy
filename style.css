@@ -19,6 +19,32 @@ html,body{height:100%;margin:0;font-family:'Nunito Sans',system-ui,Arial;color:v
 .tab-btn{background:transparent;border:1px solid var(--border);padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:700}
 .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
+/* FIX: Login Screen Styles */
+#login-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+#login-box {
+    width: 100%;
+    max-width: 320px;
+    padding: 24px;
+    text-align: center;
+}
+#password-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    font-size: 1rem;
+}
+
 /* Layout */
 #app-root{display:flex;gap:20px;max-width:1200px;margin:16px auto;padding:0 16px}
 .pane{flex:1}
@@ -39,13 +65,23 @@ html,body{height:100%;margin:0;font-family:'Nunito Sans',system-ui,Arial;color:v
 /* Main journal */
 .main-journal{width:100%;min-height:220px;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:15px;resize:none;background:transparent;color:var(--text-color);outline:none}
 .link-btn{background:none;border:none;color:var(--accent);cursor:pointer;padding:8px}
-.link-btn.muted{color:var(--muted)}
 
 /* Optional sections */
 .optional{margin-top:12px}
 .optional-toggle{width:100%;text-align:left;padding:10px;border-radius:8px;background:transparent;border:1px dashed var(--border);cursor:pointer;font-weight:700;display:flex;justify-content:space-between;align-items:center}
 .optional-body{padding:12px 8px}
-.small-input{width:100%;border:1px solid var(--border);border-radius:8px;padding:8px;resize:none;background:transparent;color:var(--text-color)}
+/* FIX: Styles for auto-growing textareas */
+.small-input{
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  resize: none;
+  background: transparent;
+  color: var(--text-color);
+  overflow-y: hidden; /* Important for smooth resizing */
+  min-height: 38px; /* Prevents it from becoming too small */
+}
 input, textarea { color: var(--text-color); }
 
 /* Habits ribbon */
@@ -59,26 +95,11 @@ input, textarea { color: var(--text-color); }
 #mini-stats .stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--level-0)}
 
 /* Buttons */
-.theme-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 1.5rem;
-  padding: 0 8px;
-  line-height: 1;
-}
+.full-btn{width:100%;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;margin-bottom:8px}
+.theme-btn {background: transparent; border: none; cursor: pointer; font-size: 1.5rem; padding: 0 8px; line-height: 1;}
 
 /* Calendar */
-/* FIX: Added styles for the calendar day-of-week header */
-.calendar-grid-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  text-align: center;
-  font-weight: 700;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
+.calendar-grid-header {display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; font-weight: 700; color: var(--muted); margin-bottom: 8px;}
 .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
 .calendar-day{aspect-ratio:1/1;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;background:var(--level-0);position:relative}
 .calendar-day.not-current-month{opacity:.5;color:var(--muted)}
@@ -100,5 +121,13 @@ input, textarea { color: var(--text-color); }
   #mobile-bottom-nav{display:flex} 
   .right-pane{order:2}
 }
-/* subtle transitions */
+
+/* Animations */
+.error-shake { animation: shake 0.5s; }
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
 .card, .optional-toggle, .habit-pill {transition:all .18s ease-in-out}
