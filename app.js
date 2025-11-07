@@ -45,18 +45,17 @@ function initDom(){
   dom.journal = $('main-journal');
   dom.saveIndicator = $('save-indicator');
   dom.habitRibbon = $('habit-ribbon');
-  dom.trackerStats = $('tracker-stats');
   dom.miniStats = $('mini-stats');
-
-  dom.tabDaily = $('tab-daily'); dom.tabCalendar = $('tab-calendar'); 
-  dom.calendarPane = $('calendar-pane'); dom.calendarGrid = $('calendar-grid'); dom.monthYearLabel = $('month-year-label');
-  // REMOVED: stats pane reference
-  dom.prevMonthBtn = $('prev-month-btn'); dom.nextMonthBtn = $('next-month-btn');
+  dom.tabDaily = $('tab-daily'); 
+  dom.tabCalendar = $('tab-calendar'); 
+  dom.calendarPane = $('calendar-pane'); 
+  dom.calendarGrid = $('calendar-grid'); 
+  dom.monthYearLabel = $('month-year-label');
+  dom.prevMonthBtn = $('prev-month-btn'); 
+  dom.nextMonthBtn = $('next-month-btn');
   dom.optionalSections = document.querySelectorAll('.optional');
-  
   dom.mbDaily = $('mb-daily');
   dom.mbCalendar = $('mb-calendar');
-  // REMOVED: mobile stats reference
 }
 
 // ---------- Helpers ----------
@@ -138,12 +137,10 @@ async function loadEntryFromFirestore(dateStr) {
 function checkAutoHabits(entryData) {
     if (!entryData) return;
     entryData.habits = entryData.habits || {};
-
     const filledPriorities = (entryData.priorities || []).filter(p => p && p.trim() !== '').length;
     if (filledPriorities >= 3) {
         entryData.habits.setPriorities = true;
     }
-
     const filledGratitudes = (entryData.gratitude || []).filter(g => g && g.trim() !== '').length;
     if (filledGratitudes >= 3) {
         entryData.habits.gratitude = true;
@@ -162,12 +159,12 @@ async function loadEntry(dateStr) {
     dom.journal.value = data.content || JOURNAL_TEMPLATE;
     renderList('priorities-list', data.priorities || []);
     renderList('gratitude-list', data.gratitude || []);
-    
     checkAutoHabits(data); 
     renderHabitRibbon(data.habits || {});
-
-    if ($('deep-work-log')) $('deep-work-log').value = data.deepWork || '';
-    if ($('food-log-entry')) $('food-log-entry').value = data.foodLog || '';
+    const deepWorkEl = $('deep-work-log');
+    const foodLogEl = $('food-log-entry');
+    if (deepWorkEl) { deepWorkEl.value = data.deepWork || ''; autosize(deepWorkEl); }
+    if (foodLogEl) { foodLogEl.value = data.foodLog || ''; autosize(foodLogEl); }
   } else {
     dom.journal.value = JOURNAL_TEMPLATE;
     renderList('priorities-list', []);
@@ -206,7 +203,6 @@ function gatherEntry() {
   document.querySelectorAll('.habit-pill').forEach(p => {
     habits[p.dataset.id] = p.classList.contains('done');
   });
-
   return {
     content: dom.journal.value,
     foodLog: $('food-log-entry') ? $('food-log-entry').value : '',
@@ -223,9 +219,7 @@ function triggerAutosave(){
   debounce(async () => {
     const dateStr = dom.dateInput.value;
     const entryData = gatherEntry();
-    
     checkAutoHabits(entryData); 
-    
     saveLocalDraft(dateStr, entryData);
     try {
       await saveEntryToFirestore(dateStr, entryData);
@@ -249,12 +243,9 @@ function renderCalendar() {
   const month = currentCalendarDate.getMonth();
   const year = currentCalendarDate.getFullYear();
   dom.monthYearLabel.textContent = `${currentCalendarDate.toLocaleString('default',{month:'long'})} ${year}`;
-
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month+1,0).getDate();
-
   for(let i=0;i<firstDay;i++){ const el = document.createElement('div'); el.className='calendar-day not-current-month'; dom.calendarGrid.appendChild(el); }
-  
   const dayElements = [];
   for(let d=1; d<=daysInMonth; d++){
       const dayDiv = document.createElement('div');
@@ -266,13 +257,11 @@ function renderCalendar() {
       dom.calendarGrid.appendChild(dayDiv);
       dayElements.push(dayDiv);
   }
-
   const promises = [];
   for(let d=1; d<=daysInMonth; d++){
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     promises.push(loadEntryFromFirestore(dateStr).then(data => ({dateStr, data, d})));
   }
-  
   Promise.all(promises).then(arr => {
     arr.forEach(obj => {
       const dayDiv = dayElements[obj.d - 1]; 
@@ -283,7 +272,7 @@ function renderCalendar() {
         if(pct > 50) dayDiv.style.color = '#fff';
       }
       dayDiv.addEventListener('click', ()=> {
-        dom.dateInput.value = obj.dateStr;
+        dom.dateInput.value = obj.dateInput.value = obj.dateStr;
         loadEntry(obj.dateStr);
         showPane('daily');
       });
@@ -293,14 +282,14 @@ function renderCalendar() {
 
 // ---------- Small UI helpers ----------
 function toggleOptional(key, show) {
-  const opt = Array.from(dom.optionalSections).find(o => o.dataset.key === key);
+  const opt = Array.from(document.querySelectorAll('.optional')).find(o => o.dataset.key === key);
   if(!opt) return;
   const body = opt.querySelector('.optional-body');
   const toggle = opt.querySelector('.optional-toggle');
   const isHidden = body.classList.contains('hidden');
   if(show === undefined) show = isHidden;
   body.classList.toggle('hidden', !show);
-  toggle.querySelector('.chev').textContent = show ? '▴' : '▾';
+  // REMOVED: chevron logic
   if (show) {
       body.querySelectorAll('textarea').forEach(autosize);
   }
@@ -323,35 +312,21 @@ function addListRow(containerId, value='') {
 function showPane(name) {
   dom.tabDaily.classList.toggle('active', name==='daily');
   dom.tabCalendar.classList.toggle('active', name==='calendar');
-  // REMOVED: stats logic
-
   dom.calendarPane.classList.toggle('hidden', name!=='calendar');
   document.querySelector('#left-col').classList.toggle('hidden', name==='calendar');
-
   if (dom.mbDaily) {
       dom.mbDaily.classList.toggle('active', name === 'daily');
       dom.mbCalendar.classList.toggle('active', name === 'calendar');
-      // REMOVED: mobile stats logic
   }
 }
 
 // ---------- initialization ----------
-function bindUI() {
+function initializeAppLogic() {
   initDom();
-
-  const urlParams = new URLSearchParams(window.location.search);
-  if(urlParams.get('master') !== 'true') {
-    document.querySelector('#access-denied-message').classList.remove('hidden');
-    document.querySelector('#app-root').classList.add('hidden');
-    return;
-  }
-
   dom.dateInput.value = getTodayStr();
   loadEntry(dom.dateInput.value);
-
   dom.dateInput.addEventListener('change', ()=>loadEntry(dom.dateInput.value));
   dom.journal.addEventListener('input', ()=>{ autosize(dom.journal); triggerAutosave(); });
-  
   document.querySelectorAll('.optional-toggle').forEach(btn=>{
     btn.addEventListener('click', e=>{
       const key = btn.closest('.optional').dataset.key;
@@ -359,26 +334,21 @@ function bindUI() {
     });
   });
   document.querySelectorAll('.small-input').forEach(el => {
-      el.addEventListener('input', triggerAutosave);
+    el.addEventListener('input', () => { autosize(el); triggerAutosave(); });
+    autosize(el);
   });
-  
   $('add-priority').addEventListener('click', ()=> addListRow('priorities-list'));
   $('add-gratitude').addEventListener('click', ()=> addListRow('gratitude-list'));
-
   dom.tabDaily.addEventListener('click', ()=> showPane('daily'));
   dom.tabCalendar.addEventListener('click', ()=> { showPane('calendar'); renderCalendar(); });
-  // REMOVED: stats tab listener
-
   dom.prevMonthBtn.addEventListener('click', ()=> { currentCalendarDate.setMonth(currentCalendarDate.getMonth()-1); renderCalendar(); });
   dom.nextMonthBtn.addEventListener('click', ()=> { currentCalendarDate.setMonth(currentCalendarDate.getMonth()+1); renderCalendar(); });
-
   dom.mbDaily.addEventListener('click', () => showPane('daily'));
   dom.mbCalendar.addEventListener('click', () => { showPane('calendar'); renderCalendar(); });
-  // REMOVED: mobile stats listener
-
   setSaved(false);
   renderHabitRibbon({});
   updateMonthlyStatsFromUI(); 
+  setupTheme();
 }
 
 // ---------- Monthly stats summary (mini) ----------
@@ -386,7 +356,6 @@ async function updateMonthlyStatsFromUI() {
   const month = currentCalendarDate.getMonth();
   const year = currentCalendarDate.getFullYear();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  
   const today = new Date();
   let daysSoFar;
   if (year === today.getFullYear() && month === today.getMonth()) {
@@ -395,9 +364,7 @@ async function updateMonthlyStatsFromUI() {
     daysSoFar = daysInMonth;
   }
   if (daysSoFar === 0) daysSoFar = 1;
-
   const counts = {}; HABITS.forEach(h => counts[h.id] = 0);
-
   const promises = [];
   for(let d=1; d<=daysInMonth; d++){
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -409,10 +376,8 @@ async function updateMonthlyStatsFromUI() {
       HABITS.forEach(h => { if(r.data.habits[h.id]) counts[h.id]++; });
     }
   });
-
   const mini = $('mini-stats');
   if(mini) mini.innerHTML = '';
-
   HABITS.forEach(h => {
     const count = counts[h.id];
     if(mini) mini.innerHTML += `<div class="stat-row"><div>${h.shortLabel}</div><div style="color:var(--muted)">${count}/${daysSoFar}</div></div>`;
@@ -420,10 +385,8 @@ async function updateMonthlyStatsFromUI() {
 }
 
 // ---------- Theme toggle persistence ----------
-// FIX: Rewritten to work with a button instead of a checkbox.
 function setupTheme() {
   const toggle = $('theme-toggle');
-  
   const applyTheme = (theme) => {
     if (theme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -433,10 +396,8 @@ function setupTheme() {
       toggle.textContent = '🌙';
     }
   };
-
   const savedTheme = localStorage.getItem('theme') || 'light';
   applyTheme(savedTheme);
-
   toggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -445,8 +406,37 @@ function setupTheme() {
   });
 }
 
-// ---------- Boot ----------
+// ---------- Boot & Login ----------
 document.addEventListener('DOMContentLoaded', ()=>{
-  bindUI();
-  setupTheme();
+    const loginOverlay = $('login-overlay');
+    const loginBox = $('login-box');
+    const passwordInput = $('password-input');
+    const loginButton = $('login-button');
+    const appRoot = $('app-root');
+    const siteHeader = document.querySelector('.site-header');
+
+    const attemptLogin = () => {
+        if (passwordInput.value === 'swag2') {
+            loginOverlay.style.display = 'none';
+            appRoot.classList.remove('hidden');
+            siteHeader.classList.remove('hidden');
+            initializeAppLogic();
+        } else {
+            loginBox.classList.add('error-shake');
+            passwordInput.value = '';
+            setTimeout(() => {
+                loginBox.classList.remove('error-shake');
+            }, 500);
+        }
+    };
+    
+    loginButton.addEventListener('click', attemptLogin);
+    passwordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            attemptLogin();
+        }
+    });
+    
+    // Hide header until logged in
+    siteHeader.classList.add('hidden');
 });
