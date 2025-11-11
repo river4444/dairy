@@ -53,6 +53,7 @@ function initDom(){
   dom.monthYearLabel = $('month-year-label');
   dom.prevMonthBtn = $('prev-month-btn'); 
   dom.nextMonthBtn = $('next-month-btn');
+  dom.habitTrackerContainer = $('habit-tracker-container'); // <-- NEW
   dom.optionalSections = document.querySelectorAll('.optional');
   dom.mbDaily = $('mb-daily');
   dom.mbCalendar = $('mb-calendar');
@@ -122,7 +123,7 @@ function renderHabitRibbon(habitStates = {}) {
 // ---------- Firebase helpers ----------
 async function saveEntryToFirestore(dateStr, entryData) {
   const entryRef = doc(db, 'diaries', diaryCollectionId, 'entries', dateStr);
-  await setDoc(entryRef, entryData);
+  await setDoc(entryRef, entryData, { merge: true }); // Use merge to avoid overwriting fields
 }
 
 async function loadEntryFromFirestore(dateStr) {
@@ -234,10 +235,95 @@ function triggerAutosave(){
 // ---------- Autosize helper ----------
 function autosize(el){ if(!el) return; el.style.height='auto'; el.style.height = el.scrollHeight + 'px'; }
 
-// ---------- Calendar rendering ----------
+
+// ---------- NEW: Habit grid update handler ----------
+async function handleHabitGridChange(e) {
+    if (e.target.type !== 'checkbox') return;
+
+    const checkbox = e.target;
+    const dateStr = checkbox.dataset.date;
+    const habitId = checkbox.dataset.habitId;
+    const isChecked = checkbox.checked;
+
+    checkbox.disabled = true; // Prevent rapid clicking
+
+    try {
+        // Load only the data needed, or create a shell if it doesn't exist
+        let entryData = await loadEntryFromFirestore(dateStr) || { habits: {} };
+        if (!entryData.habits) entryData.habits = {};
+        
+        entryData.habits[habitId] = isChecked;
+
+        // Save the updated habits object back
+        await saveEntryToFirestore(dateStr, { habits: entryData.habits });
+        
+    } catch (err) {
+        console.error("Failed to update habit from grid:", err);
+        checkbox.checked = !isChecked; // Revert on failure
+        alert("Failed to save habit. Please check your connection.");
+    } finally {
+        checkbox.disabled = false;
+    }
+}
+
+
+// ---------- NEW: Habit Tracker Grid Rendering ----------
+function renderHabitTrackerGrid(year, month, monthlyData = {}) {
+    dom.habitTrackerContainer.innerHTML = '';
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const grid = document.createElement('div');
+    grid.className = 'habit-tracker-grid';
+    // Set grid columns: 1 for labels, and 1 for each day of the month
+    grid.style.gridTemplateColumns = `120px repeat(${daysInMonth}, minmax(35px, 1fr))`;
+
+    // 1. Header Row (Day numbers)
+    const headerLabel = document.createElement('div'); // Empty top-left corner
+    grid.appendChild(headerLabel);
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'habit-header';
+        dayHeader.textContent = d;
+        grid.appendChild(dayHeader);
+    }
+
+    // 2. Habit Rows
+    HABITS.forEach(habit => {
+        // Habit Label column
+        const habitLabel = document.createElement('div');
+        habitLabel.className = 'habit-label';
+        habitLabel.textContent = habit.shortLabel;
+        habitLabel.title = habit.text;
+        grid.appendChild(habitLabel);
+
+        // Checkbox columns for each day
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const isDone = monthlyData[dateStr]?.habits?.[habit.id] || false;
+
+            const cell = document.createElement('div');
+            cell.className = 'habit-checkbox-cell';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = isDone;
+            checkbox.dataset.date = dateStr;
+            checkbox.dataset.habitId = habit.id;
+
+            cell.appendChild(checkbox);
+            grid.appendChild(cell);
+        }
+    });
+    
+    // Add a single event listener to the grid for efficiency
+    grid.addEventListener('change', handleHabitGridChange);
+    dom.habitTrackerContainer.appendChild(grid);
+}
+
+// ---------- Calendar rendering (MODIFIED) ----------
 let currentCalendarDate = new Date();
 function renderCalendar() {
   dom.calendarGrid.innerHTML = '';
+  dom.habitTrackerContainer.innerHTML = 'Loading stats...'; // Placeholder text
   const todayStr = getTodayStr();
   currentCalendarDate.setDate(1);
   const month = currentCalendarDate.getMonth();
@@ -257,13 +343,20 @@ function renderCalendar() {
       dom.calendarGrid.appendChild(dayDiv);
       dayElements.push(dayDiv);
   }
+  
+  // Fetch all data for the month at once
   const promises = [];
   for(let d=1; d<=daysInMonth; d++){
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     promises.push(loadEntryFromFirestore(dateStr).then(data => ({dateStr, data, d})));
   }
+  
   Promise.all(promises).then(arr => {
+    const monthlyData = {}; // Create a map of dateStr -> data for the habit grid
     arr.forEach(obj => {
+      if (obj.data) {
+          monthlyData[obj.dateStr] = obj.data;
+      }
       const dayDiv = dayElements[obj.d - 1]; 
       if(obj.data && obj.data.habits){
         const doneCount = Object.values(obj.data.habits).filter(Boolean).length;
@@ -272,11 +365,14 @@ function renderCalendar() {
         if(pct > 50) dayDiv.style.color = '#fff';
       }
       dayDiv.addEventListener('click', ()=> {
-        dom.dateInput.value = obj.dateInput.value = obj.dateStr;
+        dom.dateInput.value = obj.dateStr; // Corrected a bug here
         loadEntry(obj.dateStr);
         showPane('daily');
       });
     });
+    
+    // Now render the habit tracker grid with the fetched data
+    renderHabitTrackerGrid(year, month, monthlyData);
   });
 }
 
@@ -317,6 +413,9 @@ function showPane(name) {
   if (dom.mbDaily) {
       dom.mbDaily.classList.toggle('active', name === 'daily');
       dom.mbCalendar.classList.toggle('active', name === 'calendar');
+  }
+   if (name !== 'calendar' && dom.habitTrackerContainer) { 
+    dom.habitTrackerContainer.innerHTML = ''; 
   }
 }
 
