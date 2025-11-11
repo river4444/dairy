@@ -63,7 +63,7 @@ function initDom(){
 const getTodayStr = () => new Date(new Date().getTime() - new Date().getTimezoneOffset()*60000).toISOString().split('T')[0];
 const setSaved = (on=true) => { dom.saveIndicator.style.opacity = on ? '1' : '0'; if(on) setTimeout(()=> dom.saveIndicator.style.opacity = '0', 1100); };
 const debounce = (fn, ms=1200) => { clearTimeout(debounceTimer); debounceTimer = setTimeout(fn, ms); };
-const JOURNAL_TEMPLATE = `What I ate:\n- Breakfast:\n- Lunch:\n- Dinner:\n\nTop priorities:\n1.\n2.\n3.\n\nWins / Deep work:\n- \n\nGratitude:\n1.\n2.\n3.\n`;
+const JOURNAL_TEMPLATE = ``;
 const saveLocalDraft = (dateStr, data) => { try { localStorage.setItem(`draft_${dateStr}`, JSON.stringify(data)); } catch(e){} };
 const loadLocalDraft = (dateStr) => { try { const v = localStorage.getItem(`draft_${dateStr}`); return v ? JSON.parse(v) : null; } catch(e){ return null; } };
 function renderHabitRibbon(habitStates = {}) {
