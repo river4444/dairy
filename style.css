@@ -131,3 +131,41 @@ input, textarea { color: var(--text-color); }
   40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 .card, .optional-toggle, .habit-pill {transition:all .18s ease-in-out}
+
+/* NEW: Habit Tracker Grid Styles */
+.habit-tracker-container {
+  margin-top: 32px;
+  overflow-x: auto; /* Enables horizontal scrolling on smaller screens */
+  padding-bottom: 10px;
+}
+.habit-tracker-grid {
+  display: grid;
+  gap: 5px;
+  min-width: 800px; /* Ensures columns don't get too squished */
+  align-items: center;
+}
+.habit-tracker-grid > div {
+  text-align: center;
+  white-space: nowrap;
+}
+.habit-header {
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding-bottom: 8px;
+}
+.habit-label {
+  text-align: right;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding-right: 15px;
+  position: sticky; /* Keeps habit labels visible when scrolling horizontally */
+  left: 0;
+  background: var(--card-bg-color); /* Needs a background to hide content scrolling under it */
+}
+.habit-checkbox-cell input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
